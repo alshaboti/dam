@@ -1,0 +1,45 @@
+acls:
+  block_acl:
+  - rule:
+      actions:
+        allow: false
+  def_acl:
+  - rule:
+      actions:
+        allow: false
+      dl_type: 2048
+      ipv4_src: 192.168.10.18/32
+  - &id001
+    rule:
+      actions:
+        allow: true
+        mirror: 6
+  mirror_acl:
+  - *id001
+dps:
+  sw1:
+    dp_id: 259520905007391
+    hardware: Open vSwitch
+    interfaces:
+      1:
+        acls_in:
+        - mirror_acl
+        description: host2 network namespace
+        name: lan2
+        native_vlan: office
+      2:
+        acls_in:
+        - def_acl
+        description: host2 network namespace
+        name: lan2
+        native_vlan: office
+      6:
+        acls_in:
+        - def_acl
+        description: host2 network namespace
+        name: BRO
+        native_vlan: office
+vlans:
+  office:
+    description: office network
+    vid: 101
