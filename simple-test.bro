@@ -11,13 +11,11 @@ event NetControl::init()
 event NetControl::init_done() &priority=-5
 	{
 	print "Init done";
-        # drop rule goes through to simple-client.py
-#	NetControl::drop_address(1.1.2.2, 15sec, "Hi there");
 	}
 
 event connection_established(c: connection)
     {
-   # can't receive this drop in simple-client.py, only it gets connectionestablished not the drop rule!!
+   # if pcap file (offline traffic) is used then can't receive this drop in simple-client.py, only it gets connectionestablished not the drop rule. 
 
     NetControl::drop_address(c$id$orig_h, 15sec, "Hi there");
     }
