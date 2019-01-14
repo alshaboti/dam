@@ -3,6 +3,8 @@ Tested with OVS
 - port1: http server, with allow and mirror to port 6
 ```
 python -m SimpleHTTP 8000
+# or
+python -m http.server 8000
 ```
 - port2: http client, with allow all acl
 ```
