@@ -1,0 +1,10 @@
+#separator \x09
+#set_separator	,
+#empty_field	(empty)
+#unset_field	-
+#path	broker
+#open	2019-01-20-12-03-59
+#fields	ts	ty	ev	peer.address	peer.bound_port	message
+#types	time	enum	string	string	port	string
+1547985839.179485	Broker::ERROR	peer-unavailable	-	-	(invalid-node, *127.0.0.1:9977, "remote endpoint unavailable")
+#close	2019-01-20-12-04-07

@@ -5,10 +5,13 @@
 
 import os
 import re
-import paramiko
+#import paramiko
 from yaml import load, dump, YAMLError, safe_dump
 
-import logging, netcontrol, pprint
+import logging
+import netcontrol
+import pprint
+
 pp = pprint.PrettyPrinter(indent=4)
 
 
@@ -22,11 +25,11 @@ class faucet_management:
 
   # get faucet yaml file using ssh client 
   def get_faucet_yaml(self):
-     cmd = "scp " + self.remote_faucet_host + ":" + self.remote_faucet_file \
-                 + " " + self.local_faucet_file
-     os.system(cmd)
+ #    cmd = "scp " + self.remote_faucet_host + ":" + self.remote_faucet_file \
+  #               + " " + self.local_faucet_file
+   #  os.system(cmd)
 
-     with open('faucet.yaml', 'r') as file_stream:
+     with open('/etc/faucet/faucet.yaml', 'r') as file_stream:
        try:
          faucet_conf =  load(file_stream)
        except YAMLError as exc:
@@ -38,14 +41,14 @@ class faucet_management:
   # write faucet yaml file and restart fuacet using ssh
   def set_faucet_yaml(self, remote=False):
       # dump to local file
-      with open("faucet.yaml", "w") as fd:
+      with open("/etc/faucet/faucet.yaml", "w") as fd:
           dump(self.faucet_yaml, fd, default_flow_style=False, Dumper=noalias_dumper)
       # it works as long as you set ssh key between the two hosts
       # scp faucet.yaml to remote faucet
-      if remote:
-         os.system("scp "+ self.local_faucet_file +" "+ self.remote_faucet_host+":"+self.remote_faucet_file)
+#      if remote:
+ #        os.system("scp "+ self.local_faucet_file +" "+ self.remote_faucet_host+":"+self.remote_faucet_file)
          # reload faucet.yaml docker 
-         os.system("ssh "+ self.remote_faucet_host + " docker kill --signal=HUP faucet_faucet_1" )
+  #       os.system("ssh "+ self.remote_faucet_host + " docker kill --signal=HUP faucet_faucet_1" )
 
 
 def blockSrcIp(srcIP):

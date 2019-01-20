@@ -1,0 +1,51 @@
+#create faucet ovs network
+#Install ovs-docker as here 
+#http://containertutorials.com/network/ovs_docker.html
+
+sudo ovs-vsctl add-br ovs-br0 \
+-- set bridge ovs-br0 other-config:datapath-id=0000000000000001 \
+-- set bridge ovs-br0 other-config:disable-in-band=true \
+-- set bridge ovs-br0 fail_mode=secure \
+-- set-controller ovs-br0 tcp:127.0.0.1:6653 tcp:127.0.0.1:6654
+
+
+xterm -T box1 -e sudo docker run --rm  --name box1 -it --rm --network=none busybox /bin/sh &
+xterm -T box2 -e sudo docker run --rm --name box2 -it --rm --network=none python /bin/sh &
+#xterm -e sudo docker run  --name faucet -it --rm --network=host -v /etc/faucet:/etc/faucet -v /var/log/faucet:/var/log/faucet faucet/faucet /bin/bash
+xterm -T faucet -e sudo docker run --rm --name faucet -v /etc/faucet/:/etc/faucet/  \
+                -v /var/log/faucet/:/var/log/faucet/ -p 6653:6653 -p 9302:9302  faucet/faucet  faucet &
+
+#You may need to check if fuacet is running inside faucet container. 
+#If not then run it by typing faucet &
+
+#sudo docker pull ubuntu
+#then install bro on it, save that container as an image for later use. 
+#export PATH=/usr/local/bro/bin:$PATH
+#export PREFIX=/usr/local/bro
+#https://github.com/bro/bro-netcontrol
+#export PYTHONPATH=$PREFIX/lib/broctl:/pegler/bro-netcontrol
+
+xterm -T bro -e sudo docker run --rm  --name bro -it -v /home/moh/bro-docker/pegler:/pegler \
+             -v /etc/faucet/:/etc/faucet/ ubuntu/bro-ids /bin/bash &
+xterm -T bro_terminal -e sudo docker exec -it bro bash &
+
+
+sudo ip addr add dev ovs-br0 192.168.0.254/24
+sudo ovs-docker add-port ovs-br0 eth0 box1 --ipaddress=192.168.0.1/24
+sudo ovs-docker add-port ovs-br0 eth0 box2 --ipaddress=192.168.0.2/24
+sudo ovs-docker add-port ovs-br0 eth1 bro --ipaddress=192.168.0.100/24
+
+# check
+sudo ovs-vsctl show 
+sudo ovs-ofctl show ovs-br0
+#if you turn docker containers off their interface will change and then you need to remove and add them again to ovs.
+sudo ovs-docker del-port ovs-br0 eth1 bro
+
+
+# to remove everything
+sudo ovs-vsctl del-br ovs-br0
+sudo docker stop box1 box2 bro faucet
+sudo docker rm box1 box2 bro faucet
+
+
+
