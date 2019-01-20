@@ -1,5 +1,5 @@
 # pegler
-Tested with OVS 
+Tested with OVS, test script modified from https://github.com/bro/bro-netcontrol/tree/master/test
 - port1: http server, with allow and mirror to port 6
 ```
 python -m SimpleHTTP 8000
