@@ -1,0 +1,14 @@
+#separator \x09
+#set_separator	,
+#empty_field	(empty)
+#unset_field	-
+#path	weird
+#open	2019-01-26-15-52-46
+#fields	ts	uid	id.orig_h	id.orig_p	id.resp_h	id.resp_p	name	addl	notice	peer
+#types	time	string	addr	port	addr	port	string	string	bool	string
+1548517966.820487	CSD5aixvE1lSl5m3k	192.168.0.1	45870	192.168.0.2	8000	possible_split_routing	-	F	bro
+1548517966.820487	CSD5aixvE1lSl5m3k	192.168.0.1	45870	192.168.0.2	8000	data_before_established	-	F	bro
+1548517966.828573	CSD5aixvE1lSl5m3k	192.168.0.1	45870	192.168.0.2	8000	inappropriate_FIN	-	F	bro
+1548517974.328571	CP7bXX1G8D55NPtZhi	192.168.0.1	45874	192.168.0.2	8000	possible_split_routing	-	F	bro
+1548517974.328571	CP7bXX1G8D55NPtZhi	192.168.0.1	45874	192.168.0.2	8000	data_before_established	-	F	bro
+1548517974.328571	CP7bXX1G8D55NPtZhi	192.168.0.1	45874	192.168.0.2	8000	inappropriate_FIN	-	F	bro

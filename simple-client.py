@@ -55,7 +55,7 @@ def blockSrcIp(srcIP):
    blockrule = {'rule':{'dl_type': 0x800 ,'ipv4_src':srcIP,'actions': {'allow': False}}}
    faucetYaml["acls"]["def_acl"] = [blockrule] + faucetYaml["acls"]["def_acl"]
    faucet_mng.faucet_yaml = faucetYaml
-   faucet_mng.set_faucet_yaml(true)
+   faucet_mng.set_faucet_yaml(True)
    print("Block rule added sucessfully!")
 
 
@@ -74,19 +74,20 @@ faucetYaml = faucet_mng.get_faucet_yaml()
 
 
 logging.basicConfig(level=logging.DEBUG)
-ep = netcontrol.Endpoint("bro/event/netcontrol-example", "127.0.0.1", 9977);
+ep = netcontrol.Endpoint("bro/event/netcontrol-faucet", "127.0.0.1", 9977)
 
 while 1==1:
     response = ep.getNextCommand()
-    pp.pprint(response.type)
+    print("### Response.type is : ",response.type)
 
     if response.type == netcontrol.ResponseType.AddRule:
-        ep.sendRuleAdded(response, "")
+        ep.sendRuleAdded(response, "OK")
     elif response.type == netcontrol.ResponseType.RemoveRule:
-        ep.sendRuleRemoved(response, "")
+        ep.sendRuleRemoved(response, "OK")
     else:
+        print("responsee.type isn't add or remove rule: ", response.type)
         continue
     print("START")
-    pp.pprint(response.rule);
-    blockSrcIp(response.rule["entity"]["ip"])
+    pp.pprint(response.rule)
+    #blockSrcIp(response.rule["entity"]["ip"])
     print("END!")

@@ -3,9 +3,9 @@
 #empty_field	(empty)
 #unset_field	-
 #path	reporter
-#open	2019-01-20-12-04-07
+#open	2019-01-26-15-50-14
 #fields	ts	level	message	location
 #types	time	enum	string	string
-0.000000	Reporter::INFO	received termination signal	(empty)
-0.000000	Reporter::INFO	0 packets received on interface eth0, 0 dropped	(empty)
-#close	2019-01-20-12-04-07
+1548517814.935358	Reporter::INFO	received termination signal	(empty)
+1548517814.935358	Reporter::INFO	25 packets received on interface eth1, 0 dropped	(empty)
+#close	2019-01-26-15-50-14

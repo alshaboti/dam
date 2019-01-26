@@ -1,0 +1,14 @@
+#separator \x09
+#set_separator	,
+#empty_field	(empty)
+#unset_field	-
+#path	netcontrol
+#open	2019-01-26-15-52-23
+#fields	ts	rule_id	category	cmd	state	action	target	entity_type	entity	mod	msg	priority	expire	location	plugin
+#types	time	string	enum	string	enum	string	enum	string	string	string	string	int	interval	string	string
+0.000000	-	NetControl::MESSAGE	-	-	-	-	-	-	-	activating plugin with priority 0	-	-	-	Openflow-Broker-127.0.0.1:9999-12
+0.000000	-	NetControl::MESSAGE	-	-	-	-	-	-	-	waiting for plugins to initialize	-	-	-	-
+1548517943.699924	-	NetControl::MESSAGE	-	-	-	-	-	-	-	activation finished	-	-	-	Openflow-Broker-127.0.0.1:9999-12
+1548517943.699924	-	NetControl::MESSAGE	-	-	-	-	-	-	-	plugin initialization done	-	-	-	-
+1548517957.125290	2	NetControl::RULE	ADD	NetControl::REQUESTED	NetControl::DROP	NetControl::MONITOR	NetControl::FLOW	192.168.0.1/32/45864->192.168.0.2/32/8000	-	-	0	30.000000	-	Openflow-Broker-127.0.0.1:9999-12
+1548517983.686799	2	NetControl::ERROR	-	-	NetControl::DROP	NetControl::MONITOR	NetControl::FLOW	192.168.0.1/32/45864->192.168.0.2/32/8000	-	Timeout during rule insertion/removal	0	30.000000	-	Openflow-Broker-127.0.0.1:9999-12

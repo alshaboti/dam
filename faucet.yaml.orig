@@ -11,10 +11,10 @@ acls:
   - rule:
       actions:
         allow: true
-        mirror: 6
+        mirror: 3
 dps:
   sw1:
-    dp_id: 0x0000ec086b5ad11f
+    dp_id: 0x01
     hardware: Open vSwitch
     interfaces:
       1:
@@ -29,7 +29,7 @@ dps:
         description: web client 
         name: lan3
         native_vlan: office
-      6:
+      3:
         description: BRO IDS
         name: BRO
         native_vlan: office
