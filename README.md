@@ -6,6 +6,9 @@ python -m SimpleHTTP 8000
 # or
 python -m http.server 8000
 ```
+Note:
+Check here to set python path for netcontrol   
+https://github.com/bro/bro-netcontrol
 - port2: http client, with allow all acl
 ```
 wget http://192.168.1.10
