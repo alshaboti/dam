@@ -1,6 +1,6 @@
 # pegler
 Tested with OVS, test script modified from https://github.com/bro/bro-netcontrol/tree/master/test
-- port1: http server, with allow and mirror to port 6
+- port1: http server, with allow and mirror to port 3
 ```
 python -m SimpleHTTP 8000
 # or
@@ -13,11 +13,11 @@ https://github.com/bro/bro-netcontrol
 ```
 wget http://192.168.1.10
 ```
-- port6: Bro in this port with no faucet acl 
+- port3: Bro in this port with no faucet acl 
 
 To run start with BRO 
 ```
-sudo bro -i eth0 simple-test.bro
+sudo bro -C -i eth0 simple-test.bro
 python simple-client.py
 ```
 
@@ -47,4 +47,5 @@ event connection_established(c: connection)
     NetControl::drop_address(c$id$orig_h, 15sec, "Hi there");
     }
 ```
+More abotu netControl is in here https://docs.zeek.org/en/stable/frameworks/netcontrol.html
 
