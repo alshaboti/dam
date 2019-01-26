@@ -14,11 +14,13 @@ https://github.com/bro/bro-netcontrol
 wget http://192.168.1.10
 ```
 - port3: Bro in this port with no faucet acl 
-
-To run start with BRO 
+Start with broker listener
+```
+python simple-client.py
+```
+Then bro
 ```
 sudo bro -C -i eth0 simple-test.bro
-python simple-client.py
 ```
 
 Then make a request from http client to http server. 
