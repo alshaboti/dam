@@ -1,9 +1,0 @@
-
-run python:
-python of-test.py
-
-then bro:
-bro -C -r ../traces/tls/ecdhe.pcap of-test.bro
-
-next: 
-Update faucet.yaml file 

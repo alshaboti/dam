@@ -66,8 +66,13 @@ event OpenFlow::flow_removed(name: string, match: OpenFlow::ofp_match, cookie: c
 event new_connection(c: connection)
 	{
 	local id = c$id;
+	#NetControl::shunt_flow([$src_h=id$orig_h, $src_p=id$orig_p, $dst_h=id$resp_h, $dst_p=id$resp_p], 30sec);
         print "new connection";
 	}
+event icmp_echo_request (c: connection, icmp: icmp_conn, id: count, seq: count, payload: string){
+        OpenFlow::flow_mod(of_controller, [], [$cookie=OpenFlow::generate_cookie(1337), $priority=2, $command=OpenFlow::OFPFC_ADD, $actions=[$out_ports=vector(switch_bro_port)]]);
+        print "send openflow icmp block";           	
+       }
 event connection_established(c: connection)
 	{
         local   id= c$id;
@@ -79,7 +84,7 @@ event connection_established(c: connection)
 event myevent(c: connection){
         local   id= c$id;
 
-#       OpenFlow::flow_mod(of_controller, [], [$cookie=OpenFlow::generate_cookie(1337), $priority=2, $command=OpenFlow::OFPFC_ADD, $actions=[$out_ports=vector(switch_bro_port)]]);
+        OpenFlow::flow_mod(of_controller, [], [$cookie=OpenFlow::generate_cookie(1337), $priority=2, $command=OpenFlow::OFPFC_ADD, $actions=[$out_ports=vector(switch_bro_port)]]);
 	NetControl::shunt_flow([$src_h=id$orig_h, $src_p=id$orig_p, $dst_h=id$resp_h, $dst_p=id$resp_p], 30sec);
 
 #	NetControl::drop_connection(c$id, 20 secs);

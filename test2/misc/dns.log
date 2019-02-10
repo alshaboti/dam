@@ -1,9 +1,0 @@
-#separator \x09
-#set_separator	,
-#empty_field	(empty)
-#unset_field	-
-#path	dns
-#open	2019-02-10-08-43-20
-#fields	ts	uid	id.orig_h	id.orig_p	id.resp_h	id.resp_p	proto	trans_id	rtt	query	qclass	qclass_name	qtype	qtype_name	rcode	rcode_name	AA	TC	RD	RA	Z	answers	TTLs	rejected
-#types	time	string	addr	port	addr	port	enum	count	interval	string	count	string	count	string	count	string	bool	bool	bool	bool	count	vector[string]	vector[interval]	bool
-1549788190.514171	CIISeu1BK1TBZdjyDe	fe80::e0f3:93ff:fe46:7c42	5353	ff02::fb	5353	udp	0	-	_afpovertcp._tcp.local	1	C_INTERNET	12	PTR	-	-	F	F	F	F	0	-	-	F

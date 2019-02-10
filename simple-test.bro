@@ -15,12 +15,14 @@ event NetControl::init_done() &priority=-5
  event new_connection(c: connection)
 	{
 		print "new Connection!";
+
 	}
 
 event connection_established(c: connection)
     {
 	# if pcap file (offline traffic) is used then can't receive this drop in simple-client.py, only it gets connectionestablished not the drop rule. 
 		print "Connection established";
+		NetControl::drop_address(c$id$orig_h, 5sec, "***** Hi there");
     }
 
 event  http_stats (c: connection, stats: http_stats_rec){
