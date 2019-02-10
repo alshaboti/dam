@@ -29,7 +29,7 @@ event  http_stats (c: connection, stats: http_stats_rec){
 
 event icmp_echo_request (c: connection, icmp: icmp_conn, id: count, seq: count, payload: string){
 
-		print( c$id$orig_h );
+		print( c$id$orig_h , " sent icmp request");
 		if ( |NetControl::find_rules_addr(c$id$orig_h)| > 0 )
 		{
 		print "***** Rule already exists";
@@ -41,7 +41,7 @@ event icmp_echo_request (c: connection, icmp: icmp_conn, id: count, seq: count, 
 }
 event conn_stats (c: connection, os: endpoint_stats, rs: endpoint_stats)
 	{
-         print "Conn_stats";
+     print "Conn_stats"
 	}
 event NetControl::rule_added(r: NetControl::Rule, p: NetControl::PluginState, msg: string)
 	{

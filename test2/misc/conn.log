@@ -1,0 +1,14 @@
+#separator \x09
+#set_separator	,
+#empty_field	(empty)
+#unset_field	-
+#path	conn
+#open	2019-02-10-08-40-10
+#fields	ts	uid	id.orig_h	id.orig_p	id.resp_h	id.resp_p	proto	service	duration	orig_bytes	resp_bytes	conn_state	local_orig	local_resp	missed_bytes	history	orig_pkts	orig_ip_bytes	resp_pkts	resp_ip_bytes	tunnel_parents
+#types	time	string	addr	port	addr	port	enum	string	interval	count	count	string	bool	bool	count	string	count	count	count	count	set[string]
+1549788005.298933	CQx0LC15085kWkOoK1	192.168.0.1	53192	192.168.0.2	8000	tcp	http	0.007393	79	1141	RSTO	-	-	0	ShADadfR	12	798	5	1409	-
+1549788010.128511	CaFfcu4FA0W0BsHhyb	192.168.0.1	53194	192.168.0.2	8000	tcp	http	0.005944	79	0	RSTOS0	-	-	0	SADFR	6	387	0	0	-
+1549788020.112079	CcM36b4kDmdMJbKSR2	192.168.0.1	53202	192.168.0.2	8000	tcp	http	0.006754	79	0	SH	-	-	0	SADF	7	451	0	0	-
+1549788031.089036	Ckis8A10s0fhuWQaOb	192.168.0.1	53206	192.168.0.2	8000	tcp	http	0.006998	79	0	RSTOS0	-	-	0	SADFR	6	387	0	0	-
+1549788190.506703	CIISeu1BK1TBZdjyDe	fe80::e0f3:93ff:fe46:7c42	5353	ff02::fb	5353	udp	dns	-	-	-	S0	-	-	0	D	1	189	0	0	-
+1549788236.986276	CpsL664zj1rT37Z4Pb	fe80::e0f3:93ff:fe46:7c42	133	ff02::2	134	icmp	-	-	-	-	OTH	-	-	0	-	1	56	0	0	-

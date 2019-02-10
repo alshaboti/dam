@@ -1,13 +1,8 @@
 #!/bin/bash
-#################################
-# Start by sourceing the script #
-# source bro-test.sh            #
-#################################
 
 #create faucet ovs network
 #Install ovs-docker as here 
 #http://containertutorials.com/network/ovs_docker.html
-
 function create_bro_conts(){
 
 #You may need to check if fuacet is running inside faucet container. 
@@ -17,8 +12,7 @@ sudo xterm -T faucet -e docker run --rm --name faucet -v /etc/faucet/:/etc/fauce
 
 sudo xterm -T client -e docker run --rm  --name box1 -it --rm --network=none busybox /bin/sh &
 sudo xterm -bg blue -T server -e docker run --rm --name box2 -it --rm --network=none python /bin/sh &
-
-sudo xterm -T Bro -bg Grey30 -e docker run --rm  --name bro -it -v $PWD:/pegler \
+sudo xterm -T Bro -bg Grey30 -e docker run --rm  --name bro -it -v /home/moh/bro-docker/pegler:/pegler \
              -v /etc/faucet/:/etc/faucet/ ubuntu/bro-ids /bin/bash &
 }
 

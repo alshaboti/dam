@@ -1,0 +1,10 @@
+#separator \x09
+#set_separator	,
+#empty_field	(empty)
+#unset_field	-
+#path	broker
+#open	2019-02-10-08-39-42
+#fields	ts	ty	ev	peer.address	peer.bound_port	message
+#types	time	enum	string	string	port	string
+0.000000	Broker::ERROR	peer-unavailable	-	-	(invalid-node, *127.0.0.1:9999, "remote endpoint unavailable")
+1549788012.241424	Broker::STATUS	peer-added	127.0.0.1	9999	received handshake from remote core
