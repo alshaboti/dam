@@ -19,7 +19,7 @@ sudo xterm -T client -e docker run --rm  --name box1 -it --rm --network=none bus
 sudo xterm -bg blue -T server -e docker run --rm --name box2 -it --rm --network=none python /bin/sh &
 
 sudo xterm -T Bro -bg Grey30 -e docker run --rm  --name bro -it -v $PWD:/pegler \
-             -v /etc/faucet/:/etc/faucet/ ubuntu/bro-ids /bin/bash &
+             -v /etc/faucet/:/etc/faucet/ mohmd/bro-ids /bin/bash &
 }
 
 #sudo docker pull ubuntu
