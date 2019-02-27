@@ -7,19 +7,36 @@
 #create faucet ovs network
 #Install ovs-docker as here 
 #http://containertutorials.com/network/ovs_docker.html
-
+echo "create_bro_conts"
 function create_bro_conts(){
 
 #You may need to check if fuacet is running inside faucet container. 
 #If not then run it by typing faucet &
-sudo xterm -T faucet -e docker run --rm --name faucet -v /etc/faucet/:/etc/faucet/  \
-                -v /var/log/faucet/:/var/log/faucet/ -p 6653:6653 -p 9302:9302  faucet/faucet  faucet &
+	sudo xterm -T faucet -e \
+                   docker run \
+                   --rm --name faucet \
+		   -v /etc/faucet/:/etc/faucet/ \
+                   -v /var/log/faucet/:/var/log/faucet/ \
+                   -p 6653:6653 -p 9302:9302  faucet/faucet  faucet &
 
-sudo xterm -T client -e docker run --rm  --name box1 -it --rm --network=none busybox /bin/sh &
-sudo xterm -bg blue -T server -e docker run --rm --name box2 -it --rm --network=none python /bin/sh &
+	sudo xterm -T host -e \
+                   docker run \
+                   --rm  --name host \
+                   -it \
+                   --network=none busybox /bin/sh &
 
-sudo xterm -T Bro -bg Grey30 -e docker run --rm  --name bro -it -v $PWD:/pegler \
-             -v /etc/faucet/:/etc/faucet/ mohmd/bro-ids /bin/bash &
+	sudo xterm -bg blue -T server -e \
+                   docker run \
+                   --rm --name server \
+                   -it \
+                   --network=none python /bin/sh &
+
+	sudo xterm -bg Grey30 -T bro -e \
+                   docker run \
+                   --rm  --name bro \
+                   -it \
+                   -v $PWD:/pegler \
+                   -v /etc/faucet/:/etc/faucet/ mohmd/bro-ids /bin/bash &
 }
 
 #sudo docker pull ubuntu
@@ -28,25 +45,24 @@ sudo xterm -T Bro -bg Grey30 -e docker run --rm  --name bro -it -v $PWD:/pegler 
 #export PREFIX=/usr/local/bro
 #https://github.com/bro/bro-netcontrol
 #export PYTHONPATH=$PREFIX/lib/broctl:/pegler/bro-netcontrol
-
+echo "create_bro_net"
 function create_bro_net(){
-sudo xterm -T BROterm -bg Grey30 -e docker exec -it bro /bin/bash &
+	sudo xterm -T BROterm -bg Grey30 -e docker exec -it bro /bin/bash &
 
-sudo ovs-vsctl add-br ovs-br0 \
--- set bridge ovs-br0 other-config:datapath-id=0000000000000001 \
--- set bridge ovs-br0 other-config:disable-in-band=true \
--- set bridge ovs-br0 fail_mode=secure \
--- set-controller ovs-br0 tcp:127.0.0.1:6653 tcp:127.0.0.1:6654
+	sudo ovs-vsctl add-br ovs-br0 \
+	-- set bridge ovs-br0 other-config:datapath-id=0000000000000001 \
+	-- set bridge ovs-br0 other-config:disable-in-band=true \
+	-- set bridge ovs-br0 fail_mode=secure \
+	-- set-controller ovs-br0 tcp:127.0.0.1:6653 tcp:127.0.0.1:6654
 
-sudo ip addr add dev ovs-br0 192.168.0.254/24
-sudo ovs-docker add-port ovs-br0 eth0 box1 --ipaddress=192.168.0.1/24
-sudo ovs-docker add-port ovs-br0 eth0 box2 --ipaddress=192.168.0.2/24
-sudo ovs-docker add-port ovs-br0 eth1 bro --ipaddress=192.168.0.100/24
-
+	sudo ip addr add dev ovs-br0 192.168.0.254/24
+	sudo ovs-docker add-port ovs-br0 eth0 server --ipaddress=192.168.0.1/24
+	sudo ovs-docker add-port ovs-br0 eth0 host --ipaddress=192.168.0.2/24
+	sudo ovs-docker add-port ovs-br0 eth1 bro --ipaddress=192.168.0.100/24
 }
 
-
-function check_bro_test(){
+echo "check_bro_net"
+function check_bro_net(){
 	sudo ovs-vsctl show 
 	sudo ovs-ofctl show ovs-br0
 	sudo docker ps
@@ -74,14 +90,18 @@ function check_bro_test(){
 # sudo ovs-docker del-port ovs-br0 eth1 bro
 
 # to REMOVE everything
-function clear_bro_test(){
+echo "clear_bro_net_all"
+function clear_bro_net_all(){
 
-sudo ovs-vsctl del-br ovs-br0
-sudo docker stop box1 box2 bro faucet
-#sudo docker rm box1 box2 bro faucet
+	sudo docker stop server host bro faucet
+	sudo ovs-vsctl del-br ovs-br0
+	#sudo docker rm box1 box2 bro faucet
 }
 
 # faucet  reload 
-#sudo docker kill --signal=HUP faucet
+echo "faucet_relaod_config"
+function fuacet_reload_config(){
+	sudo docker kill --signal=HUP faucet
+}
 
 
