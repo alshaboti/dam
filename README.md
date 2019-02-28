@@ -51,11 +51,6 @@ vlans:
     description: office network
     vid: 101
 ```
-```
-python -m SimpleHTTP 8000
-# or
-python -m http.server 8000
-```
 ## Build the network
 You need to have docker, docker-ovs and OVS requirements installed. 
 Start by sourcing `bro-test.sh` file.
@@ -87,7 +82,7 @@ python -m http.server 8000
 4- On client/host run
 ```
 # send http request to the server
-wget http://192.168.0.1
+wget http://192.168.0.1:8000
 ```
 This connection should be mirrored by Faucet to Bro. 
 Which will use netcontrol and broker frameworks to pass drop rule to simple-client.py program. 
