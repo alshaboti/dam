@@ -9,11 +9,12 @@ import logging
 import time
 import re
 import ipaddress
-#import pprint 
+import pprint 
 
 import broker
 from select import select
 
+pp = pprint.PrettyPrinter(indent=4)
 
 
 class BroController(): #app_manager.RyuApp):
@@ -46,7 +47,6 @@ class BroController(): #app_manager.RyuApp):
                     [],[])
 
             if ( self.status_subscriber.fd() in readable ):
-                print("Got broker status message")
                 msg = self.status_subscriber.get()
                 self.handle_broker_message(msg)
             elif ( self.subscriber.fd() in readable ):
@@ -57,9 +57,8 @@ class BroController(): #app_manager.RyuApp):
     def handle_broker_message(self, m):
         if isinstance(m, broker.Status):
             if m.code() == broker.SC.PeerAdded:
-                print("Incoming connection established.")
+                print("Connected to bro ")
                 return
-
             return
 
         if ( type(m).__name__ != "tuple" ):
@@ -70,10 +69,14 @@ class BroController(): #app_manager.RyuApp):
             print("Tuple without content?")
             return
 
+        print("flow message XXXXXXXXXXXXXXXXXXx.")
+        pp.pprint(m)
+        print("flow XXXXXXXXXXXXXXXXXXXXXX")
+
         (topic, event) = m
         ev = broker.bro.Event(event)
         event_name = ev.name()
-        print("############ ", event_name)
+        print("* Event name: ",event_name)
 
         if ( event_name == "OpenFlow::broker_flow_clear" ):
             self.event_flow_clear(ev.args())
@@ -96,10 +99,12 @@ class BroController(): #app_manager.RyuApp):
 
         # since this is really only a  convenience function we should return it and just do the
         # flow-mod from bro ourselves
+        print("** clear flow event len(m)", len(m))
+ 
         name = m[0]
 
         dpid = m[1].value
-        print("flow_clear for %s %d", name, dpid)
+        print("** flow_clear for %s %d", name, dpid)
 #        self.send_success(name, m[2], m[3], "")
 #        pprint.pprint(m)
 
@@ -109,8 +114,9 @@ class BroController(): #app_manager.RyuApp):
         self.epl.publish(self.queuename, ev)
 
     def event_flow_mod(self, m):
+        print("* flow mod event len(m)", len(m))
         for i in range(len(m)):
-            print( type(m[i]) )
+            print(" * type(m[i])=", type(m[i]) )
 
 
 #        if ( len(m) != 4 ) or ( not isinstance(m[0], str) ) or ( not isinstance(m[1], broker.Count) ) or ( not isinstance(m[2], list) ) or ( not isinstance(m[3], list) ):
@@ -120,7 +126,8 @@ class BroController(): #app_manager.RyuApp):
         name = m[0]
         dpid = m[1].value
         match = self.parse_ofp_match(m[2])
-        print("MATCH : ", match.items())
+        print("* name, dpid: ", name, dpid) 
+        print("* MATCH : ", match.items())
  
         try:
             self.send_success(name, m[2], m[3], "")

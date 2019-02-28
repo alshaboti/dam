@@ -7,9 +7,14 @@
 #create faucet ovs network
 #Install ovs-docker as here 
 #http://containertutorials.com/network/ovs_docker.html
+
+echo "git_bro-netcontrol"
+function git_bro-netcontrol(){
+	git clone https://github.com/bro/bro-netcontrol.git
+}
+
 echo "create_bro_conts"
 function create_bro_conts(){
-
 #You may need to check if fuacet is running inside faucet container. 
 #If not then run it by typing faucet &
 	sudo xterm -T faucet -e \
