@@ -9,11 +9,12 @@ import logging
 import time
 import re
 import ipaddress
-#import pprint 
+import pprint 
 
 import broker
 from select import select
 
+pp = pprint.PrettyPrinter(indent=4)
 
 
 class BroController(): #app_manager.RyuApp):
@@ -46,7 +47,6 @@ class BroController(): #app_manager.RyuApp):
                     [],[])
 
             if ( self.status_subscriber.fd() in readable ):
-                print("Got broker status message")
                 msg = self.status_subscriber.get()
                 self.handle_broker_message(msg)
             elif ( self.subscriber.fd() in readable ):
@@ -57,9 +57,8 @@ class BroController(): #app_manager.RyuApp):
     def handle_broker_message(self, m):
         if isinstance(m, broker.Status):
             if m.code() == broker.SC.PeerAdded:
-                print("Incoming connection established.")
+                print("Connected to bro ")
                 return
-
             return
 
         if ( type(m).__name__ != "tuple" ):
@@ -70,10 +69,14 @@ class BroController(): #app_manager.RyuApp):
             print("Tuple without content?")
             return
 
+        print("flow message XXXXXXXXXXXXXXXXXXx.")
+        pp.pprint(m)
+        print("flow XXXXXXXXXXXXXXXXXXXXXX")
+
         (topic, event) = m
         ev = broker.bro.Event(event)
         event_name = ev.name()
-        print("############ ", event_name)
+        print("* Event name: ",event_name)
 
         if ( event_name == "OpenFlow::broker_flow_clear" ):
             self.event_flow_clear(ev.args())
@@ -90,18 +93,15 @@ class BroController(): #app_manager.RyuApp):
             return
 
     def event_flow_clear(self, m):
-#        if ( len(m) != 2 ) or ( not isinstance(m[0], str) ) or ( not isinstance(m[1], broker.Count) ):
- #           print("wrong number of elements or type in tuple for event_flow_clear")
-  #          return
 
         # since this is really only a  convenience function we should return it and just do the
         # flow-mod from bro ourselves
+        print("** clear flow event len(m)", len(m))
+ 
         name = m[0]
 
         dpid = m[1].value
-        print("flow_clear for %s %d", name, dpid)
-#        self.send_success(name, m[2], m[3], "")
-#        pprint.pprint(m)
+        print("** flow_clear for %s %d", name, dpid)
 
     def send_success(self, name, match, flow_mod, msg):
         args = [name, match, flow_mod, msg]
@@ -109,25 +109,21 @@ class BroController(): #app_manager.RyuApp):
         self.epl.publish(self.queuename, ev)
 
     def event_flow_mod(self, m):
+        print("* flow mod event len(m)", len(m))
         for i in range(len(m)):
-            print( type(m[i]) )
+            print(" * type(m[i])=", type(m[i]) )
 
-
-#        if ( len(m) != 4 ) or ( not isinstance(m[0], str) ) or ( not isinstance(m[1], broker.Count) ) or ( not isinstance(m[2], list) ) or ( not isinstance(m[3], list) ):
- #           print("wrong number of elements or type in tuple for event_flow_mod")
-  #          return
                                                             
         name = m[0]
         dpid = m[1].value
         match = self.parse_ofp_match(m[2])
-        print("MATCH : ", match.items())
+        print("* name, dpid: ", name, dpid) 
+        print("* MATCH : ", match.items())
  
         try:
             self.send_success(name, m[2], m[3], "")
         except Exception as e:
             print("send success error \n ", e)
-
-
 
     def parse_ofp_match(self, m):
         match = ['in_port', 'dl_src', 'dl_dst', 'dl_vlan', 'dl_vlan_pcp', 'dl_type', 'nw_tos', 'nw_proto', 'nw_src', 'nw_dst', 'tp_src', 'tp_dst']
@@ -150,9 +146,7 @@ class BroController(): #app_manager.RyuApp):
         return rec
 
     def record_to_record(self, match, m):
-        #if len(match) != len(m):
-        #    self.logger.error("wrong number of elements in parse_ofp_match")
-        #    return
+
 
         if not isinstance(m, list):
             self.logger.error("Got non record element")

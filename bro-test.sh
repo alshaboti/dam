@@ -13,35 +13,34 @@ function git_bro-netcontrol(){
 	git clone https://github.com/bro/bro-netcontrol.git
 }
 
-echo "create_bro_conts"
-function create_bro_conts(){
-#You may need to check if fuacet is running inside faucet container. 
-#If not then run it by typing faucet &
-	sudo xterm -T faucet -e \
-                   docker run \
-                   --rm --name faucet \
+echo "cr_fuacet-cont"
+function cr_faucet-cont(){
+         docker run \
+                   --rm \
+                   --name faucet \
 		   -v /etc/faucet/:/etc/faucet/ \
                    -v /var/log/faucet/:/var/log/faucet/ \
-                   -p 6653:6653 -p 9302:9302  faucet/faucet  faucet &
+                   -p 6653:6653 -p 9302:9302  faucet/faucet  faucet
+}
+echo "cr_server-cont"
+function cr_server-cont(){
+	docker run \
+                   --rm -it  --name server \
+                   --network=none python /bin/bash 
+}
 
-	sudo xterm -T host -e \
-                   docker run \
-                   --rm  --name host \
-                   -it \
-                   --network=none busybox /bin/sh &
-
-	sudo xterm -bg blue -T server -e \
-                   docker run \
-                   --rm --name server \
-                   -it \
-                   --network=none python /bin/sh &
-
-	sudo xterm -bg Grey30 -T bro -e \
-                   docker run \
-                   --rm  --name bro \
-                   -it \
+echo "cr_host-cont"
+function cr_host-cont(){
+	docker run \
+                   --rm -it --name host \
+                   --network=none python  /bin/bash
+}
+echo "cr_bro-cont"
+function cr_bro-cont(){
+	docker run \
+                   --rm -it --name bro \
                    -v $PWD:/pegler \
-                   -v /etc/faucet/:/etc/faucet/ mohmd/bro-ids /bin/bash &
+                   -v /etc/faucet/:/etc/faucet/ mohmd/bro-ids /bin/bash
 }
 
 #sudo docker pull ubuntu
@@ -52,25 +51,25 @@ function create_bro_conts(){
 #export PYTHONPATH=$PREFIX/lib/broctl:/pegler/bro-netcontrol
 echo "create_bro_net"
 function create_bro_net(){
-	sudo xterm -T BROterm -bg Grey30 -e docker exec -it bro /bin/bash &
+#	ocker exec -it bro /bin/bash &
 
-	sudo ovs-vsctl add-br ovs-br0 \
+	ovs-vsctl add-br ovs-br0 \
 	-- set bridge ovs-br0 other-config:datapath-id=0000000000000001 \
 	-- set bridge ovs-br0 other-config:disable-in-band=true \
 	-- set bridge ovs-br0 fail_mode=secure \
 	-- set-controller ovs-br0 tcp:127.0.0.1:6653 tcp:127.0.0.1:6654
 
-	sudo ip addr add dev ovs-br0 192.168.0.254/24
-	sudo ovs-docker add-port ovs-br0 eth0 server --ipaddress=192.168.0.1/24
-	sudo ovs-docker add-port ovs-br0 eth0 host --ipaddress=192.168.0.2/24
-	sudo ovs-docker add-port ovs-br0 eth1 bro --ipaddress=192.168.0.100/24
+        ip addr add dev ovs-br0 192.168.0.254/24
+	ovs-docker add-port ovs-br0 eth0 server --ipaddress=192.168.0.1/24
+        ovs-docker add-port ovs-br0 eth0 host --ipaddress=192.168.0.2/24
+	ovs-docker add-port ovs-br0 eth1 bro --ipaddress=192.168.0.100/24
 }
 
 echo "check_bro_net"
 function check_bro_net(){
-	sudo ovs-vsctl show 
-	sudo ovs-ofctl show ovs-br0
-	sudo docker ps
+	ovs-vsctl show 
+	ovs-ofctl show ovs-br0
+	docker ps
 }
 
 
@@ -98,15 +97,15 @@ function check_bro_net(){
 echo "clear_bro_net_all"
 function clear_bro_net_all(){
 
-	sudo docker stop server host bro faucet
-	sudo ovs-vsctl del-br ovs-br0
-	#sudo docker rm box1 box2 bro faucet
+	docker stop server host bro faucet
+	ovs-vsctl del-br ovs-br0
+	docker rm server host bro faucet
 }
 
 # faucet  reload 
 echo "faucet_relaod_config"
 function fuacet_reload_config(){
-	sudo docker kill --signal=HUP faucet
+	docker kill --signal=HUP faucet
 }
 
 
