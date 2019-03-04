@@ -56,10 +56,10 @@ vlans:
 You need to have docker, docker-ovs and OVS requirements installed. 
 Start by sourcing `bro-test.sh` file.
 ```
-source bro-test.sh
+source setup.sh
 ```
-The `bro-test.sh` bash file contains scripts to: 
-- create faucet, bro, server, client docker containers `create_bro_conts`.
+The `setup.sh` bash file contains scripts to: 
+- create faucet, bro, server, client docker containers `cr_all_conts_with_xterms`.
 - Create OVS and connect docker containers `create_bro_net`.  
 - Check the network setup `check_bro_net`. 
 - Clear all `clear_bro_net_all`. 
@@ -68,13 +68,11 @@ The `bro-test.sh` bash file contains scripts to:
 ## Run the test
 1- On xterm window of BRO run 
 ```
-cd pegler
-bro -C -i eth1 simple-test.bro
+bro -C -i eth2 of-test.bro
 ```
 2- On the other xterm Bro window run
 ```
-cd pegler
-python simple-client.py
+python of-client.py
 ```
 3- On server xterm  run simple web server
 ```

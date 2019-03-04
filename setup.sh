@@ -7,9 +7,16 @@
 #create faucet ovs network
 #Install ovs-docker as here 
 #http://containertutorials.com/network/ovs_docker.html
+echo ">>>>>>>>>>>>>>>Pre requisits<<<<<<<<<<<<<<<<<<<<<"
+echo "clone bro-netcontrol"
 
+echo "git_bro-netcontrol"
+function git_bro-netcontrol(){
+	git clone https://github.com/bro/bro-netcontrol.git
+}
 
-echo "############## Create and attach to each container alone ##################### "
+echo "############## First: Create and attach to each container ##################### "
+echo "1- Either use tmux and create and attach to each container using the following functions"
 echo "cr_fuacet-cont"
 function cr_faucet-cont(){
          docker run \
@@ -41,7 +48,7 @@ function cr_bro-cont(){
                    -v /etc/faucet/:/etc/faucet/ mohmd/bro-ids /bin/bash
 }
 
-echo "############## Create all container at once and attach to xterm ###################### "
+echo "2- OR create and attach to all container at once using xterm"
 echo "cr_all_conts_with_xterms"
 function cr_all_conts_with_xterms(){
 #You may need to check if fuacet is running inside faucet container. 
@@ -59,13 +66,13 @@ function cr_all_conts_with_xterms(){
                    -it \
                    python /bin/sh &
 
-	xterm -bg grey -T server -e \
+	xterm -bg NavyBlue T server -e \
                    docker run \
                    --rm --name server \
                    -it \
                    python /bin/sh &
 
-	xterm -bg Silver -T broIDS -e \
+	xterm -bg Maroon -T broIDS -e \
                    docker run \
                    --rm  --name bro \
                    -it \
@@ -82,6 +89,7 @@ function cr_all_conts_with_xterms(){
 #export PREFIX=/usr/local/bro
 #https://github.com/bro/bro-netcontrol
 #export PYTHONPATH=$PREFIX/lib/broctl:/pegler/bro-netcontrol
+echo "###################### Second: configure and build the network connections ####################"
 echo "create_bro_net"
 function create_bro_net(){
 	ovs-vsctl add-br ovs-br0 \
@@ -106,19 +114,9 @@ function create_bro_net(){
 }
 
 
-echo "################### Remove everything #########################"
-# to REMOVE everything
-echo "clear_bro_net_all"
-function clear_bro_net_all(){
-
-	docker stop server host bro faucet 2>/dev/null
-	ovs-vsctl del-br ovs-br0 2>/dev/null
-	docker rm host server bro faucet  2>/dev/null
-	docker network rm bro_faucet_nw 2>/dev/null
-}
 
 
-echo "######################### Other commands #########################"
+echo "######################### Third (optinal): you may use other commands #########################"
 echo "check_bro_net"
 function check_bro_net(){
 	ovs-vsctl show 
@@ -133,7 +131,7 @@ function get_bro-bash(){
 }
 echo "get_bro-bash-xterm"
 function get_bro-bash-xterm(){
-	xterm -T BROterm -bg Silver -e docker exec -it -w /pegler/ bro /bin/bash
+	xterm -T BROterm -bg Silver -e docker exec -it -w /pegler/ bro /bin/bash &
 }
 
 # faucet  reload 
@@ -143,7 +141,13 @@ function fuacet_reload_config(){
 }
 
 
-echo "git_bro-netcontrol"
-function git_bro-netcontrol(){
-	git clone https://github.com/bro/bro-netcontrol.git
+
+echo "################### Remove everything ########################"
+# to REMOVE everything
+echo "clear_bro_net_all"
+function clear_bro_net_all(){
+	docker stop server host bro faucet 2>/dev/null
+	ovs-vsctl del-br ovs-br0 2>/dev/null
+	docker rm host server bro faucet  2>/dev/null
+	docker network rm bro_faucet_nw 2>/dev/null
 }
