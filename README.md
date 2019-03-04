@@ -51,6 +51,7 @@ vlans:
     description: office network
     vid: 101
 ```
+![ovs-docker|473x482](net-setup.png) 
 ## Build the network
 You need to have docker, docker-ovs and OVS requirements installed. 
 Start by sourcing `bro-test.sh` file.
