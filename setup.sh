@@ -51,8 +51,6 @@ function cr_bro-cont(){
 echo "2- OR create and attach to all container at once using xterm"
 echo "cr_all_conts_with_xterms"
 function cr_all_conts_with_xterms(){
-#You may need to check if fuacet is running inside faucet container. 
-#If not then run it by typing faucet &
 	xterm -T faucet -e \
                    docker run \
                    --rm --name faucet \
@@ -66,7 +64,7 @@ function cr_all_conts_with_xterms(){
                    -it \
                    python /bin/sh &
 
-	xterm -bg NavyBlue T server -e \
+	xterm -bg NavyBlue -T server -e \
                    docker run \
                    --rm --name server \
                    -it \
@@ -131,7 +129,7 @@ function get_bro-bash(){
 }
 echo "get_bro-bash-xterm"
 function get_bro-bash-xterm(){
-	xterm -T BROterm -bg Silver -e docker exec -it -w /pegler/ bro /bin/bash &
+	xterm -T BROterm -bg Maroon -e docker exec -it -w /pegler/ bro /bin/bash &
 }
 
 # faucet  reload 

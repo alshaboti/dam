@@ -57,7 +57,7 @@ class BroController(): #app_manager.RyuApp):
     def handle_broker_message(self, m):
         if isinstance(m, broker.Status):
             if m.code() == broker.SC.PeerAdded:
-                print("Connected to bro ")
+                print("Connected to bro! ")
                 return
             return
 
@@ -69,14 +69,11 @@ class BroController(): #app_manager.RyuApp):
             print("Tuple without content?")
             return
 
-        print("flow message XXXXXXXXXXXXXXXXXXx.")
-        pp.pprint(m)
-        print("flow XXXXXXXXXXXXXXXXXXXXXX")
-
         (topic, event) = m
         ev = broker.bro.Event(event)
         event_name = ev.name()
-        print("* Event name: ",event_name)
+        print()
+        print("******* Event name: ",event_name)
 
         if ( event_name == "OpenFlow::broker_flow_clear" ):
             self.event_flow_clear(ev.args())
@@ -112,6 +109,7 @@ class BroController(): #app_manager.RyuApp):
         print("* flow mod event len(m)", len(m))
         for i in range(len(m)):
             print(" * type(m[i])=", type(m[i]) )
+            pp.pprint(m[i])
 
                                                             
         name = m[0]
@@ -128,7 +126,6 @@ class BroController(): #app_manager.RyuApp):
     def parse_ofp_match(self, m):
         match = ['in_port', 'dl_src', 'dl_dst', 'dl_vlan', 'dl_vlan_pcp', 'dl_type', 'nw_tos', 'nw_proto', 'nw_src', 'nw_dst', 'tp_src', 'tp_dst']
         return self.record_to_record(match, m)
-
 
     def parse_ofp_flow_mod(self, m):
         match = ['cookie', 'table_id', 'command', 'idle_timeout', 'hard_timeout', 'priority', 'out_port', 'out_group', 'flags']
