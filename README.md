@@ -92,3 +92,8 @@ Now, python script can update faucet.yaml file based on such events received fro
 
 More abotu netControl is in here https://docs.zeek.org/en/stable/frameworks/netcontrol.html
 Tested with OVS, test script modified from https://github.com/bro/bro-netcontrol/tree/master/test
+
+# TODO
+1- Testing OpenFlow framework, and found that openflow:match use subnet and I couldn't match with host IP. 
+2- Now, I am focusing on NetControl test 
+3- File to be used of-nc-simple.bro/.py
