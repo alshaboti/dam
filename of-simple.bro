@@ -95,6 +95,8 @@ function test_openflow()
     # look https://docs.zeek.org/en/stable/scripts/base/frameworks/openflow/main.bro.html#id-OpenFlow::flow_mod
 
 	# in_port, dl_src, dl_dst,dl_vlan,dl_vlan_pcp,dl_type,nw_tos,nw_proto,nw_src,nw_dst,tp_src,tp_dst
+	# I stop here as I can't match with specific IP, port!!!!!!!!!!!!!!!!!!!!!!!!!!!!1
+	# working on NetControl instead
 	local ofm: OpenFlow::ofp_match = [$in_port=3, $nw_src= 192.168.0.0/24, $nw_dst = 192.168.0.0/24];
 
     OpenFlow::flow_mod(of_controller, ofm, [$cookie=OpenFlow::generate_cookie(1337), $priority=2, $command=OpenFlow::OFPFC_ADD, $actions=[$out_ports=vector(switch_bro_port)]]);

@@ -12,7 +12,7 @@ import logging
 import netcontrol
 import pprint
 
-pp = pprint.PrettyPrinter(indent=4)
+pp = pprint.PrettyPrinter(indent=5)
 
 
 class faucet_management:

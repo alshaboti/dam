@@ -62,13 +62,13 @@ function cr_all_conts_with_xterms(){
                    docker run \
                    --rm  --name host \
                    -it \
-                   python /bin/sh &
+                   python /bin/bash &
 
 	xterm -bg NavyBlue -T server -e \
                    docker run \
                    --rm --name server \
                    -it \
-                   python /bin/sh &
+                   python /bin/bash &
 
 	xterm -bg Maroon -T broIDS -e \
                    docker run \

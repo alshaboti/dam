@@ -18,11 +18,30 @@ event NetControl::init_done() &priority=-5
 
 	}
 
+function our_drop_connection(c: conn_id, t: interval)
+	{
+	# As a first step, create the NetControl::Entity that we want to block
+	local e = NetControl::Entity($ty=NetControl::CONNECTION, $conn=c);
+	# Then, use the entity to create the rule to drop the entity in the forward path
+	local r = NetControl::Rule($ty=NetControl::DROP,
+		$target=NetControl::FORWARD, $entity=e, $expire=t);
+
+	# Add the rule
+	local id = NetControl::add_rule(r);
+
+	if ( id == "" )
+		print "Error while dropping";
+	}
 event connection_established(c: connection)
     {
 	# if pcap file (offline traffic) is used then can't receive this drop in simple-client.py, only it gets connectionestablished not the drop rule. 
 		print "Connection established";
-		NetControl::drop_address(c$id$orig_h, 5sec, "***** Hi there");
+		# direct way to add/drop rules
+		NetControl::drop_address(c$id$orig_h, 5sec, "hi there");
+        our_drop_connection(c$id, 4 secs);
+		NetControl::redirect_flow([$src_h=c$id$orig_h, $src_m = "FF:FF:FF:BB:BB:AA", $src_p=c$id$orig_p, $dst_h=c$id$resp_h, $dst_m="FF:FF:FF:BB:BB:AA", $dst_p=c$id$resp_p], $out_port=5, $t=30sec);
+        NetControl::quarantine_host($infected=c$id$orig_h, $dns=8.8.8.8, $quarantine=127.0.0.3, $t=15sec);
+        NetControl::whitelist_address(1.2.3.4, 15sec);		
     }
 
 event  http_stats (c: connection, stats: http_stats_rec){
