@@ -97,6 +97,11 @@ allow_connection(c$id, 4 secs);
 Netcontrol frameworks passes drop rule to simple-client.py program, which updates `faucet.yaml` file if the rule is not already installed. 
 
 
+* To delete all network settings for this test (e.e. containers and ovs) run
+```
+clear_bro_net_all
+```
+
 More abotu netControl is in here https://docs.zeek.org/en/stable/frameworks/netcontrol.html
 Tested with OVS, test script modified from https://github.com/bro/bro-netcontrol/tree/master/test
 
