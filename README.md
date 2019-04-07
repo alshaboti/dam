@@ -161,3 +161,6 @@ I this  error, and ssh crashed
  You are attempting to run an openrc service on a
  * system which openrc did not boot.
 ```
+
+Shift to build fuacet on `ubuntu` rather than add `ssh` service on `faucet/faucet`
+image which is based on `Alpine linux`.
