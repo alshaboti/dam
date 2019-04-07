@@ -6,6 +6,14 @@ acls:
   def_acl:
   - rule:
       actions:
+        allow: false
+      dl_type: 2048
+      ipv4_dst: 192.168.0.1
+      ipv4_src: 192.168.0.2
+      nw_proto: 6
+      tcp_dst: 8000
+  - rule:
+      actions:
         allow: true
   mirror_acl:
   - rule:

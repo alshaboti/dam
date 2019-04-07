@@ -56,7 +56,7 @@ function cr_all_conts_with_xterms(){
                    --rm --name faucet \
 		   -v /etc/faucet/:/etc/faucet/ \
                    -v /var/log/faucet/:/var/log/faucet/ \
-                   -p 6653:6653 -p 9302:9302  faucet/faucet  faucet &
+                   -p 6653:6653 -p 9302:9302  mohmd/faucet-ssh  faucet &
 
 	xterm -bg MediumPurple4 -T host -e \
                    docker run \

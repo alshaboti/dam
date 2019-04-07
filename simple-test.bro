@@ -46,28 +46,34 @@ function allow_connection(c: conn_id, t: interval)
 	if ( id == "" )
 		print "Error while whitelisting";
 	}	
+function drop_allow_NetControl(id: conn_id, t: interval, action: string)	
+{
+	# dropy by ip
+	if(action == "drop")
+		NetControl::drop_address(id$orig_h, 5sec, "hi there");
+	# else if(action == "whitelist")				
+	# 	NetControl::whitelist_address(1.2.3.4, 15sec);		
+	# else if(action == "redirect")				
+	# 	NetControl::redirect_flow([$src_h=c$id$orig_h, $src_m = "FF:FF:FF:BB:BB:AA", $src_p=c$id$orig_p, $dst_h=c$id$resp_h, $dst_m="FF:FF:FF:BB:BB:AA", $dst_p=c$id$resp_p], $out_port=5, $t=30sec);
+	# else if(action == "quarantine")				
+	# 	NetControl::quarantine_host($infected=c$id$orig_h, $dns=8.8.8.8, $quarantine=127.0.0.3, $t=15sec);
+
+}
 event connection_established(c: connection)
     {	
 		print "Connection established";
 		#at brocker subs: response.rule["entity"]
-		
-		# dropy by ip
-		# NetControl::drop_address(c$id$orig_h, 5sec, "hi there");
-        # NetControl::whitelist_address(1.2.3.4, 15sec);		
 
 		# direct way to drop by 4tuples
-        drop_connection(c$id, 4 secs);
+        #drop_connection(c$id, 4 secs);
 
 		# direct way to allow by 4tuples
-        allow_connection(c$id, 4 secs);
-
-		# NetControl::redirect_flow([$src_h=c$id$orig_h, $src_m = "FF:FF:FF:BB:BB:AA", $src_p=c$id$orig_p, $dst_h=c$id$resp_h, $dst_m="FF:FF:FF:BB:BB:AA", $dst_p=c$id$resp_p], $out_port=5, $t=30sec);
-        # NetControl::quarantine_host($infected=c$id$orig_h, $dns=8.8.8.8, $quarantine=127.0.0.3, $t=15sec);
+        #allow_connection(c$id, 4 secs);
         
     }
 
 event  http_stats (c: connection, stats: http_stats_rec){
-		print "http stats";
+		#print "http stats";
 	}
 
 event icmp_echo_request (c: connection, icmp: icmp_conn, id: count, seq: count, payload: string){
@@ -90,3 +96,56 @@ event NetControl::rule_added(r: NetControl::Rule, p: NetControl::PluginState, ms
 	{
 	print "Rule added successfully", r$id, msg;
 }
+
+
+########## file analysis framework ######
+# event connection_state_remove(c: connection)
+#     {
+#     print "connection_state_remove";
+#     print c$uid;
+#     print c$id;
+#     for ( s in c$service )
+#         print s;
+#     }
+
+# event file_state_remove(f: fa_file)
+#     {
+#     print "file_state_remove";
+#     print f$id;
+#     for ( cid in f$conns )
+#         {
+#         print f$conns[cid]$uid;
+#         print cid;
+#         }
+#     print f$source;
+#     }
+
+event file_sniff(f: fa_file, meta: fa_metadata)
+    {
+	#print "file_sniff";
+	#print meta ;
+	if ( ! meta?$mime_type ) return;
+    #print "new file", f$id, meta$mime_type;
+	
+	#text/html, application/x-sharedlib
+    if ( meta$mime_type == "application/x-executable" ) 
+        Files::add_analyzer(f, Files::ANALYZER_MD5);		
+    }
+
+#fa_file record: https://docs.zeek.org/en/stable/scripts/base/init-bare.bro.html#type-fa_file
+event file_hash(f: fa_file, kind: string, hash: string)
+    {
+    #print "file_hash", f$id, kind, hash;
+
+	if (kind== "md5" && hash == "8e5b325156981e0bcba714dc32f718c5" ){
+		print "Bash binary file md5!";
+		for ( cid in f$conns )
+		{
+			#print f$conns[cid]$uid;
+			print "Rule is sent to drop connection: ", cid;
+			drop_connection(cid, 3600 secs);
+		}		
+	}
+
+    print "service ", f$source;
+    }

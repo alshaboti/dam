@@ -95,7 +95,36 @@ drop_connection(c$id, 4 secs);
 allow_connection(c$id, 4 secs);
 ```
 Netcontrol frameworks passes drop rule to simple-client.py program, which updates `faucet.yaml` file if the rule is not already installed. 
+### Detect and drop binary file transfer based on its hash
+Try to request `/bin/bash` file through http as following
+```
+curl -O http://192.168.0.1:8000/bin/bash
+```
+The `bash` file MD5 will be detected by `zeek` and drop rule will be sent to 
+python container to be insalled in `faucet`.   
 
+Check simple-test.bro
+```
+event file_sniff(f: fa_file, meta: fa_metadata)
+  {
+	if ( ! meta?$mime_type ) return;
+	
+    if ( meta$mime_type == "application/x-executable" ) 
+        Files::add_analyzer(f, Files::ANALYZER_MD5);		
+  }
+event file_hash(f: fa_file, kind: string, hash: string)
+  {
+	if (kind== "md5" && hash == "8e5b325156981e0bcba714dc32f718c5" ){
+		print "Bash binary file md5!";
+		for ( cid in f$conns )
+		  { 
+			#print f$conns[cid]$uid;
+			print "Rule is sent to drop connection: ", cid;
+			drop_connection(cid, 3600 secs);
+		  }		
+  	}
+  }
+```
 
 * To delete all network settings for this test (e.e. containers and ovs) run
 ```
@@ -110,4 +139,25 @@ Tested with OVS, test script modified from https://github.com/bro/bro-netcontrol
 - I shifted to NetControl and create two general functions to add/drop rules in `simple-test.bro`.
 - Faucet rules will be added always to the top of the `def_acl`, only if the rule is not already exists.
 # TODO
-- Create a scenario where Bro only send block if malicious connection e.g. ssh guessing. 
+- Push updated `faucet.yaml` file to faucet and send it `SIGHUP` signal. 
+# issue
+- There is no ssh service running on fuacet container. I tried to install it but no success. 
+```
+FROM faucet/faucet
+RUN apk update 
+RUN apk add openrc --no-cache 
+RUN apk add openssh-server --no-cache
+RUN rc-update add sshd && \
+    rc-status 
+RUN touch /run/openrc/softlevel 
+
+RUN /etc/init.d/sshd start
+RUN /etc/init.d/sshd status
+
+```
+
+I this  error, and ssh crashed
+```
+ You are attempting to run an openrc service on a
+ * system which openrc did not boot.
+```
