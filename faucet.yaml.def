@@ -1,0 +1,39 @@
+acls:
+  block_acl:
+  - rule:
+      actions:
+        allow: false
+  def_acl:
+  - rule:
+      actions:
+        allow: true
+  mirror_acl:
+  - rule:
+      actions:
+        allow: true
+        mirror: 3
+dps:
+  sw1:
+    dp_id: 0x01
+    hardware: Open vSwitch
+    interfaces:
+      1:
+        acls_in:
+        - mirror_acl
+        description: web server
+        name: lan2
+        native_vlan: office
+      2:
+        acls_in:
+        - def_acl
+        description: web client 
+        name: lan3
+        native_vlan: office
+      3:
+        description: BRO IDS
+        name: BRO
+        native_vlan: office
+vlans:
+  office:
+    description: office network
+    vid: 101
