@@ -135,7 +135,7 @@ event file_sniff(f: fa_file, meta: fa_metadata)
 #fa_file record: https://docs.zeek.org/en/stable/scripts/base/init-bare.bro.html#type-fa_file
 event file_hash(f: fa_file, kind: string, hash: string)
     {
-    #print "file_hash", f$id, kind, hash;
+     print "file_hash", f$id, kind, hash;
 
 	if (kind== "md5" && hash == "8e5b325156981e0bcba714dc32f718c5" ){
 		print "Bash binary file md5!";

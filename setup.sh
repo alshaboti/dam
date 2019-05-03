@@ -15,48 +15,52 @@ function git_bro-netcontrol(){
 	git clone https://github.com/bro/bro-netcontrol.git
 }
 
+echo " "
 echo "############## First: Create and attach to each container ##################### "
-echo "1- Either use tmux and create and attach to each container using the following functions"
-echo "cr_fuacet-cont"
-function cr_faucet-cont(){
-         docker run \
-                   --rm \
-                   --name faucet \
-		   -v /etc/faucet/:/etc/faucet/ \
-                   -v /var/log/faucet/:/var/log/faucet/ \
-                   -p 6653:6653 -p 9302:9302  faucet/faucet  faucet
-}
+# echo "1- Either use tmux and create and attach to each container using the following functions"
+# echo "cr_fuacet-cont"
+# function cr_faucet-cont(){
+#          docker run \
+#                    --rm \
+#                    --name faucet \
+# 		   -v /etc/faucet/:/etc/faucet/ \
+#                    -v /var/log/faucet/:/var/log/faucet/ \
+#                    -p 6653:6653 -p 9302:9302  faucet/faucet  faucet
+# }
 
-echo "cr_server-cont"
-function cr_server-cont(){
-	docker run \
-                   --rm -it  --name server \
-                   --network=none python /bin/bash 
-}
+# echo "cr_server-cont"
+# function cr_server-cont(){
+# 	docker run \
+#                    --rm -it  --name server \
+#                    --network=none python /bin/bash 
+# }
 
-echo "cr_host-cont"
-function cr_host-cont(){
-	docker run \
-                   --rm -it --name host \
-                   --network=none python  /bin/bash
-}
-echo "cr_bro-cont"
-function cr_bro-cont(){
-	docker run \
-                   --rm -it --name bro \
-                   -v $PWD:/pegler \
-                   -v /etc/faucet/:/etc/faucet/ mohmd/bro-ids /bin/bash
-}
-
-echo "2- OR create and attach to all container at once using xterm"
+# echo "cr_host-cont"
+# function cr_host-cont(){
+# 	docker run \
+#                    --rm -it --name host \
+#                    --network=none python  /bin/bash
+# }
+# echo "cr_bro-cont"
+# function cr_bro-cont(){
+# 	docker run \
+#                    --rm -it --name bro \
+#                    -v $PWD:/pegler \
+#                    -v /etc/faucet/:/etc/faucet/ mohmd/bro-ids /bin/bash
+# }
+echo " "
+echo ">> Create and attach to all container at once using xterm"
 echo "cr_all_conts_with_xterms"
 function cr_all_conts_with_xterms(){
 	xterm -T faucet -e \
                    docker run \
                    --rm --name faucet \
-		   -v /etc/faucet/:/etc/faucet/ \
+		   -v $PWD/faucet/:/etc/faucet/ \
                    -v /var/log/faucet/:/var/log/faucet/ \
-                   -p 6653:6653 -p 9302:9302  faucet_ssh  bash -c "/usr/sbin/sshd -D ; faucet" &
+                   -p 6653:6653 -p 9302:9302 \
+		   mohmd/faucet-ssh  bash -c "/etc/init.d/ssh start && faucet " &
+		   #mohmd/faucet-ssh bash -c "/etc/init.d/ssh start && faucet" &
+		  
 
 
 	xterm -bg MediumPurple4 -T host -e \
@@ -71,12 +75,13 @@ function cr_all_conts_with_xterms(){
                    -it \
                    python /bin/bash &
 
+# mohmd/bro-ids req pip install docker
 	xterm -bg Maroon -T broIDS -e \
                    docker run \
                    --rm  --name bro \
-                   -it \
+                   -it \		   
                    -v ${PWD}:/pegler \
-                   -v /etc/faucet/:/etc/faucet/ \
+                   -v $PWD/faucet:/etc/faucet/ \
 				   -w /pegler/ \
 				   mohmd/bro-ids /bin/bash &
 }
@@ -88,6 +93,7 @@ function cr_all_conts_with_xterms(){
 #export PREFIX=/usr/local/bro
 #https://github.com/bro/bro-netcontrol
 #export PYTHONPATH=$PREFIX/lib/broctl:/pegler/bro-netcontrol
+echo " "
 echo "###################### Second: configure and build the network connections ####################"
 echo "create_bro_net"
 function create_bro_net(){
@@ -114,7 +120,7 @@ function create_bro_net(){
 
 
 
-
+echo " "
 echo "######################### Third (optinal): you may use other commands #########################"
 echo "check_bro_net"
 function check_bro_net(){

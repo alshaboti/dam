@@ -94,8 +94,10 @@ Bro can send drop or allow rules to `simple-client.py` script by sending the 4tu
 drop_connection(c$id, 4 secs);
 allow_connection(c$id, 4 secs);
 ```
-Netcontrol frameworks passes drop rule to simple-client.py program, which updates `faucet.yaml` file if the rule is not already installed. 
+In this case nothing will happen as the request isn't suspecious. 
+
 ### Detect and drop binary file transfer based on its hash
+Netcontrol frameworks passes drop rule to simple-client.py program, which updates `faucet.yaml` file if the rule is not already installed.  
 Try to request `/bin/bash` file through http as following
 ```
 curl -O http://192.168.0.1:8000/bin/bash
@@ -126,6 +128,9 @@ event file_hash(f: fa_file, kind: string, hash: string)
   }
 ```
 
+Python script `Simple-client.py` will install faucet rules to block the connection based on `zeek` `drop_connection` request. Then will send the updated `faucet.yaml` file to `faucet container` and send `HUP` signale to reload the new rules. In general, python scrip can install allow or block rules based on the incomming rule request by `zeek` (`DROP`, `WHITELIST`).
+
+
 * To delete all network settings for this test (e.e. containers and ovs) run
 ```
 clear_bro_net_all
@@ -138,8 +143,26 @@ Tested with OVS, test script modified from https://github.com/bro/bro-netcontrol
 - I tested OpenFlow framework and found that `OpenFlow::ofp_match` of the flow only allows to match network ip not host ip!!. look into `misc/of-nc-simple.bro`
 - I shifted to NetControl and create two general functions to add/drop rules in `simple-test.bro`.
 - Faucet rules will be added always to the top of the `def_acl`, only if the rule is not already exists.
+- python script sends HUP signal to faucet container through ssh to reload faucet.yaml. 
 # TODO
-- Push updated `faucet.yaml` file to faucet and send it `SIGHUP` signal. 
+- Check why bro script only catch one file hash, then it stop analysing any files hashes. 
+
+
+# Inter-containers communication 
+For testing we can use docker API to send HUP signal to faucet, instead of using ssh.
+(like here)[https://github.com/alshaboti/dockerSheet/blob/master/README.md#docker-api]
+by mounting docker.sock to the container and install docker package
+```
+-v /var/run/docker.sock:/var/run/docker.sock 
+pip install docker
+```
+then use this script
+```
+ import docker # pip install docker
+ client = docker.from_env()
+ container = client.containers.get('faucet')
+ container.exec_run("pkill -HUP ryu-manager")
+```
 # issue
 - There is no ssh service running on fuacet container. I tried to install it but no success. 
 ```

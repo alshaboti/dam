@@ -21,4 +21,5 @@ RUN apt-get install curl gnupg apt-transport-https lsb-release -y \
 EXPOSE 22 
 ExPOSE 6653
 
-CMD /usr/sbin/sshd -D; faucet
+CMD /etc/init.d/ssh start && faucet
+# sudo docker build -t mohmd/faucet-ssh .
