@@ -1,0 +1,9 @@
+FROM debian
+RUN apt update
+RUN apt install cmake make gcc g++ flex bison libpcap-dev libssl-dev python-dev swig zlib1g-dev -y
+RUN apt install git python-pip -y && pip install pyyaml
+RUN git clone --recursive https://github.com/zeek/zeek && cd zeek && ./configure && make && make install
+RUN pip install paramiko scp
+ENV PATH=/usr/local/bro/bin:$PATH
+ENV PYTHONPATH=/usr/local/bro/lib/broctl:/pegler/bro-netcontrol
+# sudo docker build -t mohmd/bro-ids -f ./Dockerfile.bro-ids .

@@ -17,73 +17,36 @@ function git_bro-netcontrol(){
 
 echo " "
 echo "############## First: Create and attach to each container ##################### "
-# echo "1- Either use tmux and create and attach to each container using the following functions"
-# echo "cr_fuacet-cont"
-# function cr_faucet-cont(){
-#          docker run \
-#                    --rm \
-#                    --name faucet \
-# 		   -v /etc/faucet/:/etc/faucet/ \
-#                    -v /var/log/faucet/:/var/log/faucet/ \
-#                    -p 6653:6653 -p 9302:9302  faucet/faucet  faucet
-# }
-
-# echo "cr_server-cont"
-# function cr_server-cont(){
-# 	docker run \
-#                    --rm -it  --name server \
-#                    --network=none python /bin/bash 
-# }
-
-# echo "cr_host-cont"
-# function cr_host-cont(){
-# 	docker run \
-#                    --rm -it --name host \
-#                    --network=none python  /bin/bash
-# }
-# echo "cr_bro-cont"
-# function cr_bro-cont(){
-# 	docker run \
-#                    --rm -it --name bro \
-#                    -v $PWD:/pegler \
-#                    -v /etc/faucet/:/etc/faucet/ mohmd/bro-ids /bin/bash
-# }
-echo " "
-echo ">> Create and attach to all container at once using xterm"
 echo "cr_all_conts_with_xterms"
 function cr_all_conts_with_xterms(){
 	xterm -T faucet -e \
-                   docker run \
+		   docker run \
                    --rm --name faucet \
 		   -v $PWD/faucet/:/etc/faucet/ \
                    -v /var/log/faucet/:/var/log/faucet/ \
                    -p 6653:6653 -p 9302:9302 \
 		   mohmd/faucet-ssh  bash -c "/etc/init.d/ssh start && faucet " &
-		   #mohmd/faucet-ssh bash -c "/etc/init.d/ssh start && faucet" &
-		  
-
 
 	xterm -bg MediumPurple4 -T host -e \
                    docker run \
                    --rm  --name host \
                    -it \
-                   python /bin/bash &
+                   python bash &
 
 	xterm -bg NavyBlue -T server -e \
                    docker run \
                    --rm --name server \
                    -it \
-                   python /bin/bash &
+                   python bash &
 
-# mohmd/bro-ids req pip install docker
 	xterm -bg Maroon -T broIDS -e \
                    docker run \
                    --rm  --name bro \
-                   -it \		   
-                   -v ${PWD}:/pegler \
+                   -it \
+                   -v $PWD:/pegler \
                    -v $PWD/faucet:/etc/faucet/ \
-				   -w /pegler/ \
-				   mohmd/bro-ids /bin/bash &
+		   -w /pegler/ \
+		   mohmd/bro-ids bash &
 }
 
 
@@ -118,7 +81,16 @@ function create_bro_net(){
 
 }
 
-
+echo " "
+echo "################### Remove everything ########################"
+# to REMOVE everything
+echo "clear_bro_net_all"
+function clear_bro_net_all(){
+	docker stop server host bro faucet 2>/dev/null
+	ovs-vsctl del-br ovs-br0 2>/dev/null
+	docker rm host server bro faucet  2>/dev/null
+	docker network rm bro_faucet_nw 2>/dev/null
+}
 
 echo " "
 echo "######################### Third (optinal): you may use other commands #########################"
@@ -139,20 +111,4 @@ function get_bro-bash-xterm(){
 	xterm -T BROterm -bg Maroon -e docker exec -it -w /pegler/ bro /bin/bash &
 }
 
-# faucet  reload 
-echo "faucet_relaod_config"
-function fuacet_reload_config(){
-	docker kill --signal=HUP faucet
-}
 
-
-
-echo "################### Remove everything ########################"
-# to REMOVE everything
-echo "clear_bro_net_all"
-function clear_bro_net_all(){
-	docker stop server host bro faucet 2>/dev/null
-	ovs-vsctl del-br ovs-br0 2>/dev/null
-	docker rm host server bro faucet  2>/dev/null
-	docker network rm bro_faucet_nw 2>/dev/null
-}

@@ -1,4 +1,5 @@
 @load base/frameworks/netcontrol
+@load base/files/extract
 
 redef exit_only_after_terminate = T;
 
@@ -76,18 +77,18 @@ event  http_stats (c: connection, stats: http_stats_rec){
 		#print "http stats";
 	}
 
-event icmp_echo_request (c: connection, icmp: icmp_conn, id: count, seq: count, payload: string){
+# event icmp_echo_request (c: connection, icmp: icmp_conn, id: count, seq: count, payload: string){
 
-		print( c$id$orig_h );
-		if ( |NetControl::find_rules_addr(c$id$orig_h)| > 0 )
-		{
-		print "***** Rule already exists";
-		return;
-		}
+# 		print( c$id$orig_h );
+# 		if ( |NetControl::find_rules_addr(c$id$orig_h)| > 0 )
+# 		{
+# 		print "***** Rule already exists";
+# 		return;
+# 		}
 
-		NetControl::drop_address(c$id$orig_h, 5sec, "***** Hi there");
-		print "***** Rule added";
-}
+# 		NetControl::drop_address(c$id$orig_h, 5sec, "***** Hi there");
+# 		print "***** Rule added";
+# }
 event conn_stats (c: connection, os: endpoint_stats, rs: endpoint_stats)
 	{
          print "Conn_stats";
@@ -119,18 +120,25 @@ event NetControl::rule_added(r: NetControl::Rule, p: NetControl::PluginState, ms
 #         }
 #     print f$source;
 #     }
-
-event file_sniff(f: fa_file, meta: fa_metadata)
+event file_new(f: fa_file)
     {
-	#print "file_sniff";
-	#print meta ;
-	if ( ! meta?$mime_type ) return;
-    #print "new file", f$id, meta$mime_type;
-	
-	#text/html, application/x-sharedlib
-    if ( meta$mime_type == "application/x-executable" ) 
-        Files::add_analyzer(f, Files::ANALYZER_MD5);		
+    local ext = "";
+    #print f;
+    # if ( f?$mime_type )
+    #     ext = ext_map[f$mime_type];
+
+    local fname = fmt("%s-%s", f$source, f$id);
+	print fname;
+    #Files::add_analyzer(f, Files::ANALYZER_EXTRACT, [$extract_filename=fname]);
     }
+
+#https://docs.zeek.org/en/latest/scripts/base/bif/event.bif.zeek.html#id-file_new
+event file_over_new_connection(f: fa_file, c: connection, is_orig: bool)
+{
+ print "All connections: ", f$conns;
+ print "This connection: ", c$id;
+
+}
 
 #fa_file record: https://docs.zeek.org/en/stable/scripts/base/init-bare.bro.html#type-fa_file
 event file_hash(f: fa_file, kind: string, hash: string)
@@ -143,7 +151,7 @@ event file_hash(f: fa_file, kind: string, hash: string)
 		{
 			#print f$conns[cid]$uid;
 			print "Rule is sent to drop connection: ", cid;
-			drop_connection(cid, 3600 secs);
+			drop_connection(cid, 5 secs);
 		}		
 	}
 

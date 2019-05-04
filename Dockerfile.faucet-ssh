@@ -22,4 +22,4 @@ EXPOSE 22
 ExPOSE 6653
 
 CMD /etc/init.d/ssh start && faucet
-# sudo docker build -t mohmd/faucet-ssh .
+# sudo docker build -t mohmd/faucet-ssh -f Dockerfile.faucet-ssh .
