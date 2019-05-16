@@ -19,21 +19,21 @@ RUN apt-get install curl gnupg apt-transport-https lsb-release -y \
     && apt-get install faucet -y
 
 # Install faucetagent
-RUN apt install git -y \
-    && git clone https://github.com/faucetsdn/faucetagent.git 
+#RUN apt install git -y \
+#    && git clone https://github.com/faucetsdn/faucetagent.git 
+COPY faucetagent /faucetagent
+RUN cd faucetagent && ./dependencies.sh
+#    && sed -i "s/sudo//g" dependencies.sh \ 
+#    && ./dependencies.sh
 
-RUN cd faucetagent \
-    && sed -i "s/sudo//g" dependencies.sh \ 
-    && ./dependencies.sh
-
-RUN mkdir -p tls_cert_key/server
-RUN openssl req -x509 -sha256 -nodes -days 365 -newkey rsa:2048 -keyout tls_cert_key/server/server.key -out tls_cert_key/server/server.crt  -subj '/CN=faucet.localhost'
+#RUN mkdir -p tls_cert_key/server
+#RUN openssl req -x509 -sha256 -nodes -days 365 -newkey rsa:2048 -keyout tls_cert_key/server/server.key -out tls_cert_key/server/server.crt  -subj '/CN=faucet.localhost'
 RUN  cd faucetagent && make
 
 EXPOSE 22 
 ExPOSE 6653
 
-CMD /etc/init.d/ssh start && ./faucetagent/faucetagent.py --cert tls_cert_key/server/server.crt  --key tls_cert_key/server/server.key --configfile /etc/faucet/faucet.yaml  
-# you need to run faucet using 
+CMD /etc/init.d/ssh start && ./faucetagent/faucetagent.py --cert ./faucetagent/tls_cert_key/server/server.crt  --key ./faucetagent/tls_cert_key/server/server.key --configfile /etc/faucet/faucet.yaml  
+# You need to run faucet using 
 # sudo docker exec -it faucet faucet
 # sudo docker build -t mohmd/faucet-ssh -f Dockerfile.faucet-ssh .
