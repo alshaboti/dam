@@ -1,26 +1,31 @@
 FROM ubuntu:16.04 
 RUN apt update
-#RUN apt install cmake make gcc g++ flex bison libpcap-dev libssl-dev python-dev swig zlib1g-dev -y
-#RUN apt install git python-pip -y && pip install pyyaml
-#RUN git clone --recursive https://github.com/zeek/zeek && cd zeek && ./configure && make && make install
-#RUN pip install paramiko scp
-#ENV PATH=/usr/local/bro/bin:$PATH
-#ENV PYTHONPATH=/usr/local/bro/lib/broctl:/pegler/bro-netcontrol
+
+RUN apt install cmake make gcc g++ flex bison libpcap-dev libssl-dev python-dev swig zlib1g-dev -y
+RUN apt install git python-pip -y && pip install pyyaml
+RUN git clone --recursive https://github.com/zeek/zeek && cd zeek && ./configure && make && make install
+RUN pip install paramiko scp
+ENV PATH=/usr/local/bro/bin:$PATH
+ENV PYTHONPATH=/usr/local/bro/lib/broctl:/pegler/bro-netcontrol
 
 #install faucetagent clint
-RUN apt install curl git -y
+RUN apt install curl -y
 RUN curl -O https://dl.google.com/go/go1.12.5.linux-amd64.tar.gz
 RUN mkdir /root/go
 RUN tar -C /root/go -xzf go1.12.5.linux-amd64.tar.gz
-ENV PATH=$PATH:/root/go/go/bin
+ENV PATH=$PATH:/root/go/go/bin:/root/go/bin
 ENV GOPATH=/root/go
 
 RUN go get github.com/google/gnxi/gnmi_capabilities \
+    && go install github.com/google/gnxi/gnmi_capabilities \
     && go get github.com/google/gnxi/gnmi_set \
    && go get github.com/google/gnxi/gnmi_get
+
 COPY faucetagent /faucetagent
+
 ENV AUTH="-ca /faucetagent/tls_cert_key/client/ca.crt -cert /faucetagent/tls_cert_key/client/client.crt -key /faucetagent/tls_cert_key/client/client.key -target_name faucet.localhost -target_addr=192.168.100.3:10161"
-RUN gnmi_capabilities $AUTH
-RUN gnmi_get $AUTH -xpath=/ 
+
+#RUN gnmi_capabilities $AUTH
+#RUN gnmi_get $AUTH -xpath=/ 
 
 # sudo docker build -t mohmd/bro-ids -f ./Dockerfile.bro-ids .

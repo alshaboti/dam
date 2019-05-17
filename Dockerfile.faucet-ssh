@@ -20,11 +20,8 @@ RUN apt-get install curl gnupg apt-transport-https lsb-release -y \
 
 # Install faucetagent
 #RUN apt install git -y \
-#    && git clone https://github.com/faucetsdn/faucetagent.git 
 COPY faucetagent /faucetagent
-RUN cd faucetagent && ./dependencies.sh
-#    && sed -i "s/sudo//g" dependencies.sh \ 
-#    && ./dependencies.sh
+RUN cd faucetagent && sed -i "s/sudo//g" dependencies.sh && ./dependencies.sh
 
 #RUN mkdir -p tls_cert_key/server
 #RUN openssl req -x509 -sha256 -nodes -days 365 -newkey rsa:2048 -keyout tls_cert_key/server/server.key -out tls_cert_key/server/server.crt  -subj '/CN=faucet.localhost'
