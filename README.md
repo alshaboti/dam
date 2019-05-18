@@ -147,7 +147,7 @@ clear_bro_net_all
 More abotu netControl is in here https://docs.zeek.org/en/stable/frameworks/netcontrol.html
 Tested with OVS, test script modified from https://github.com/bro/bro-netcontrol/tree/master/test
 
-# Done
+## Done
 - I tested OpenFlow framework and found that `OpenFlow::ofp_match` of the flow only allows to match network ip not host ip!!. look into `misc/of-nc-simple.bro`
 - I shifted to NetControl and create two general functions to add/drop rules in `simple-test.bro`.
 - Faucet rules will be added always to the top of the `def_acl`, only if the rule is not already exists.
@@ -155,11 +155,11 @@ Tested with OVS, test script modified from https://github.com/bro/bro-netcontrol
 - Use gNMI to get/set faucet.yaml file.
 - Update all scripts to use zeek instead of bro
 
-# TODO
+## TODO
 - Check why `python simple-client` stop working after updating bro to zeek.
 
 
-# Inter-containers communication 
+## Inter-containers communication 
 For testing we can use docker API to send HUP signal to faucet, instead of using ssh.
 (like here)[https://github.com/alshaboti/dockerSheet/blob/master/README.md#docker-api]
 by mounting docker.sock to the container and install docker package
@@ -174,7 +174,8 @@ then use this script
  container = client.containers.get('faucet')
  container.exec_run("pkill -HUP ryu-manager")
 ```
-# issue
+## issue
+### faucet and ssh
 - There is no ssh service running on fuacet container. I tried to install it but no success. 
 ```
 FROM faucet/faucet
@@ -197,10 +198,10 @@ I this  error, and ssh crashed
 ```
 
 Shift to build fuacet on `ubuntu` rather than add `ssh` service on `faucet/faucet`
-image which is based on `Alpine linux`.
-
+image that is based on `Alpine linux`.
+### Zeek
 - Zeek/bro doesn't sniff files unless python server is running on port 8000?  
-## faucetagent 
+### faucetagent 
 ```
 # $(<faucet.yaml) not working , need to be "$(<faucet.yaml)"
 root@8c57dfa15a14:/pegler/etc/faucet# gnmi_set $AUTH -replace=/:$(<faucet.yaml)
