@@ -51,7 +51,7 @@ function drop_allow_NetControl(id: conn_id, t: interval, action: string)
 {
 	# dropy by ip
 	if(action == "drop")
-		NetControl::drop_address(id$orig_h, 5sec, "hi there");
+		NetControl::drop_address(id$orig_h, 500sec, "hi there");
 	# else if(action == "whitelist")				
 	# 	NetControl::whitelist_address(1.2.3.4, 15sec);		
 	# else if(action == "redirect")				
@@ -100,17 +100,20 @@ event NetControl::rule_added(r: NetControl::Rule, p: NetControl::PluginState, ms
 
 
 ########## file analysis framework ######
-# event file_new(f: fa_file)
-#     {
-#     local ext = "";
-#     #print f;
-#     # if ( f?$mime_type )
-#     #     ext = ext_map[f$mime_type];
+event file_new(f: fa_file)
+    {
+		print "new File";
+   Files::add_analyzer(f, Files::ANALYZER_MD5);
 
-#     local fname = fmt("%s-%s", f$source, f$id);
-# 	print fname;
-#     #Files::add_analyzer(f, Files::ANALYZER_EXTRACT, [$extract_filename=fname]);
-#     }
+#    local ext = "";
+    #print f;
+    # if ( f?$mime_type )
+    #     ext = ext_map[f$mime_type];
+
+ #   local fname = fmt("%s-%s", f$source, f$id);
+#	print fname;
+    #Files::add_analyzer(f, Files::ANALYZER_EXTRACT, [$extract_filename=fname]);
+    }
 
 #https://docs.zeek.org/en/latest/scripts/base/bif/event.bif.zeek.html#id-file_new
 event file_over_new_connection(f: fa_file, c: connection, is_orig: bool)
@@ -123,7 +126,7 @@ event file_over_new_connection(f: fa_file, c: connection, is_orig: bool)
 #fa_file record: https://docs.zeek.org/en/stable/scripts/base/init-bare.bro.html#type-fa_file
 event file_sniff(f: fa_file, meta: fa_metadata)
     {
-	#print "file_sniff";
+	print "file_sniff";
 	#print meta ;
 	if ( ! meta?$mime_type ) return;
     #print "new file", f$id, meta$mime_type;
@@ -132,17 +135,20 @@ event file_sniff(f: fa_file, meta: fa_metadata)
     if ( meta$mime_type == "application/x-executable" ) 
         Files::add_analyzer(f, Files::ANALYZER_MD5);		
     }
+
 event file_hash(f: fa_file, kind: string, hash: string)
     {
      print "file_hash", f$id, kind, hash;
 
-	if (kind== "md5" && hash == "8e5b325156981e0bcba714dc32f718c5" ){
+	if (kind== "md5" && hash == "8e5b325156981e0bcba714dc32f718c5"  ){
 		print "Bash binary file md5!";
 		for ( cid in f$conns )
 		{
 			#print f$conns[cid]$uid;
 			print "Rule is sent to drop connection: ", cid;
-			drop_connection(cid, 5 secs);
+        	NetControl::drop_address(cid$orig_h, 5sec, "hi there");
+
+			#drop_connection(cid, 500 secs);
 		}		
 	}
 

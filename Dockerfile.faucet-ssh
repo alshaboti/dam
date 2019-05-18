@@ -19,18 +19,20 @@ RUN apt-get install curl gnupg apt-transport-https lsb-release -y \
     && apt-get install faucet -y
 
 # Install faucetagent
-#RUN apt install git -y \
-COPY faucetagent /faucetagent
-RUN cd faucetagent && sed -i "s/sudo//g" dependencies.sh && ./dependencies.sh
+COPY ./  /pegler/
+RUN apt install git -y
+RUN git clone https://github.com/faucetsdn/faucetagent.git \
+    && cd /faucetagent && sed -i "s/sudo//g" dependencies.sh && ./dependencies.sh
 
-#RUN mkdir -p tls_cert_key/server
-#RUN openssl req -x509 -sha256 -nodes -days 365 -newkey rsa:2048 -keyout tls_cert_key/server/server.key -out tls_cert_key/server/server.crt  -subj '/CN=faucet.localhost'
-RUN  cd faucetagent && make
+RUN  cd /faucetagent && make
 
-EXPOSE 22 
+# faucetagent uses fuser utility for reloading faucet.yaml file
+RUN apt install psmisc 
+
 ExPOSE 6653
 
-CMD /etc/init.d/ssh start && ./faucetagent/faucetagent.py --cert ./faucetagent/tls_cert_key/server/server.crt  --key ./faucetagent/tls_cert_key/server/server.key --configfile /etc/faucet/faucet.yaml  
-# You need to run faucet using 
-# sudo docker exec -it faucet faucet
+CMD /etc/init.d/ssh start && faucet 
+
+# You need to run gnmi agent using 
+# sudo docker exec -it faucet ./faucetagent/faucetagent.py --cert /pegler/tls_cert_key/server/server.crt  --key /pegler/tls_cert_key/server/server.key --configfile /etc/faucet/faucet.yaml 
 # sudo docker build -t mohmd/faucet-ssh -f Dockerfile.faucet-ssh .

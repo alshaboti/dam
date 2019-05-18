@@ -54,29 +54,39 @@ vlans:
 ![ovs-docker|473x482](net-setup.png) 
 ## Build the network
 You need to have docker, docker-ovs and OVS requirements installed. 
-Start by sourcing `bro-test.sh` file.
+Start by sourcing `setup.sh` file.
 ```
 source setup.sh
 ```
 The `setup.sh` bash file contains scripts to: 
-- Create faucet, bro, server, client docker containers `cr_all_conts_with_xterms`.
-- Get another xterm for bro `get_bro-bash-xterm`.
-- Create OVS and connect docker containers `create_bro_net`.  
-- Check the network setup `check_bro_net`. 
-- Clear all `clear_bro_net_all`. 
-- Reload faucet configuration file `faucet_relaod_config`. 
+- `generate_gNMI_certs`: create fake certificates and keys for gNMI client and agent between zeek/bro and faucet.
+-`cr_all_conts_with_xterms`: create faucet, bro, server, client docker containers.
+- `get_zeek-bash-xterm`: Get another xterm for bro.
+- `create_bro_net`: Create OVS and connect docker containers.  
+- `check_bro_net`: Check the network setup. 
+- `clear_bro_net_all` Clear all. 
+- `faucet_relaod_config` Reload faucet configuration file. 
 
 ## Run the test
-In this test, Bro sends block and allow rules for any connection, for now http connection between client and web server. 
-
+In this test, Bro sends block rules to python script to block a connection that carry the `bash` file (when client request `/bin/bash` file from the webserver). 
+```
+# log in as root or in docker group
+su - 
+soruce setup.sh
+generate_gNMI_certs
+cr_all_conts_with_xterms
+```
+Then:
 1- Start by running python broker, that will receive Bro events through NetControl framework.
+It will use `gNMI` to request current `faucet.yaml` file from `faucet` container.  
 On xterm window of BRO run 
 ```
 python simple-client.py
 ```
-2- Now run Bro instant on the other xterm bro window. 
+2- Now run Bro/Zeek instant on the other xterm bro window. 
 ```
-bro -C -i eth2 simple-test.bro
+get_zeek-bash-xterm
+zeek -C -i eth2 simple-test.bro
 ```
 
 3- Now, we are ready to make some connections. On server xterm  run simple web server
@@ -86,21 +96,19 @@ python -m http.server 8000
 4- On client/host xterm run 
 ```
 # send http request to the server
-curl http://192.168.0.1:8000
+wget http://192.168.0.1:8000/bin/bash
 ```
 This connection should be mirrored by Faucet to Bro. 
-Bro can send drop or allow rules to `simple-client.py` script by sending the 4tuples of the connection `c$id` to drop or allow connection functions:
-``` 
-drop_connection(c$id, 4 secs);
-allow_connection(c$id, 4 secs);
-```
-In this case nothing will happen as the request isn't suspecious. 
+Bro can send drop or allow rules to `simple-client.py` script by sending the 4tuples of the connection `c$id` to drop the connection.   
+Python script `simple-client.py` will update the `faucet.yaml` file locally then use `gNMI` to replace `faucet.yaml` file in `faucet` container by the updated one.
+
+This results in blocking the connection between client and server containers on port 8000. 
 
 ### Detect and drop binary file transfer based on its hash
 Netcontrol frameworks passes drop rule to simple-client.py program, which updates `faucet.yaml` file if the rule is not already installed.  
 Try to request `/bin/bash` file through http as following
 ```
-curl -O http://192.168.0.1:8000/bin/bash
+wget http://192.168.0.1:8000/bin/bash
 ```
 The `bash` file MD5 will be detected by `zeek` and drop rule will be sent to 
 python container to be insalled in `faucet`.   
@@ -144,8 +152,11 @@ Tested with OVS, test script modified from https://github.com/bro/bro-netcontrol
 - I shifted to NetControl and create two general functions to add/drop rules in `simple-test.bro`.
 - Faucet rules will be added always to the top of the `def_acl`, only if the rule is not already exists.
 - python script sends HUP signal to faucet container through ssh to reload faucet.yaml. 
+- Use gNMI to get/set faucet.yaml file.
+- Update all scripts to use zeek instead of bro
+
 # TODO
-- Check why bro script only catch one file hash, then it stop analysing any files hashes. 
+- Check why `python simple-client` stop working after updating bro to zeek.
 
 
 # Inter-containers communication 
@@ -187,3 +198,47 @@ I this  error, and ssh crashed
 
 Shift to build fuacet on `ubuntu` rather than add `ssh` service on `faucet/faucet`
 image which is based on `Alpine linux`.
+
+- Zeek/bro doesn't sniff files unless python server is running on port 8000?  
+## faucetagent 
+```
+# $(<faucet.yaml) not working , need to be "$(<faucet.yaml)"
+root@8c57dfa15a14:/pegler/etc/faucet# gnmi_set $AUTH -replace=/:$(<faucet.yaml)
+== setRequest:
+replace: <
+  path: <
+  >
+  val: <
+    string_val: "acls:"
+  >
+>
+
+
+# fuser not found
+root@8c57dfa15a14:/pegler/etc/faucet# gnmi_set $AUTH -replace=/:"$(<faucet.yaml)"
+== setRequest:
+replace: <
+  path: <
+  >
+  val: <
+    string_val: "acls:\n  block_acl:\n  - rule:\n      actions:\n        allow: false\n  def_acl:\n  - rule:\n      actions:\n        allow: true\n  mirror_acl:\n  - rule:\n      actions:\n        allow: true\n        mirror: 3\ndps:\n  sw1:\n    dp_id: 1\n    hardware: Open vSwitch\n    interfaces:\n      1:\n        acls_in:\n        - mirror_acl\n        description: web server\n        name: lan2\n        native_vlan: office\n      2:\n        acls_in:\n        - def_acl\n        description: web client\n        name: lan3\n        native_vlan: office\n      3:\n        description: BRO IDS\n        name: BRO\n        native_vlan: office\nvlans:\n  office:\n    description: office network\n    vid: 101"
+  >
+>
+
+F0518 13:13:52.315985      37 gnmi_set.go:160] Set failed: rpc error: code = Unknown desc = Exception calling application: [Errno 2] No such file or directory: 'fuser'
+
+
+# works but also return error
+root@8c57dfa15a14:/pegler/etc/faucet# gnmi_set $AUTH -replace=/:"$(<faucet.yaml)"
+== setRequest:
+replace: <
+  path: <
+  >
+  val: <
+    string_val: "acls:\n  block_acl:\n  - rule:\n      actions:\n        allow: false\n  def_acl:\n  - rule:\n      actions:\n        allow: true\n  mirror_acl:\n  - rule:\n      actions:\n        allow: true\n        mirror: 3\ndps:\n  sw1:\n    dp_id: 1\n    hardware: Open vSwitch\n    interfaces:\n      1:\n        acls_in:\n        - mirror_acl\n        description: web server\n        name: lan2\n        native_vlan: office\n      2:\n        acls_in:\n        - def_acl\n        description: web client\n        name: lan3\n        native_vlan: office\n      3:\n        description: BRO IDS\n        name: BRO\n        native_vlan: office\nvlans:\n  office:\n    description: office network\n    vid: 101"
+  >
+>
+
+F0518 13:28:21.209323      55 gnmi_set.go:160] Set failed: rpc error: code = Unknown desc = Exception calling application: 'config_files'
+
+```

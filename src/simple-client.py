@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import os
 from yaml import load, dump, YAMLError, safe_dump, dumper
@@ -6,17 +6,17 @@ import json
 import logging
 import netcontrol
 import pprint
-import paramiko 
-from scp import SCPClient
+#import paramiko 
+#from scp import SCPClient
 
 pp = pprint.PrettyPrinter(indent=5)
 
-def createSSHClient(server, port, user, password):
-    client = paramiko.SSHClient()
-    client.load_system_host_keys()
-    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-    client.connect(server, port, user, password)
-    return client
+# def createSSHClient(server, port, user, password):
+#     client = paramiko.SSHClient()
+#     client.load_system_host_keys()
+#     client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+#     client.connect(server, port, user, password)
+#     return client
 
 
 def is_rule_exist(rule, acl_list):
@@ -49,18 +49,19 @@ class faucet_management:
   def __init__(self):
     self.remote_faucet_host = "192.168.100.3"
     self.remote_faucet_file = "/etc/faucet/faucet.yaml"
-    self.local_faucet_file = "./faucet.yaml"
-    self.local_default_faucet_file = "./faucet.yaml.def"
+    self.local_faucet_file = "../etc/faucet/faucet.yaml"
     self.get_faucet_yaml(remote=True)
 
   # get faucet yaml file using ssh client 
   def get_faucet_yaml(self, remote = False):
       if remote:
-        ssh = createSSHClient(self.remote_faucet_host, 22, "root", "changeme")
-        scp = SCPClient(ssh.get_transport())
-        scp.get(self.remote_faucet_file,self.local_faucet_file)
+        #os.system("echo $AUTH")
+        os.system("./gnmi_get_src.sh")
+      #   ssh = createSSHClient(self.remote_faucet_host, 22, "root", "changeme")
+      #   scp = SCPClient(ssh.get_transport())
+      #   scp.get(self.remote_faucet_file,self.local_faucet_file)
 
-      with open(self.local_default_faucet_file, 'r') as file_stream:
+      with open(self.local_faucet_file, 'r') as file_stream:
         try:
           self.faucet_yaml =  load(file_stream)
         except YAMLError as exc:
@@ -76,11 +77,12 @@ class faucet_management:
       # it works as long as you set ssh key between the two hosts
       # scp faucet.yaml to remote faucet
       if remote:
-        ssh = createSSHClient("192.168.100.3", 22, "root", "changeme")
-        scp = SCPClient(ssh.get_transport())
-        scp.put(self.local_faucet_file,self.remote_faucet_file)
-        stdin, stdout, stderr = ssh.exec_command("pkill -HUP ryu-manager")        
-        print (stdout.read())
+        os.system("./gnmi_set_src.sh")
+      #   ssh = createSSHClient("192.168.100.3", 22, "root", "changeme")
+      #   scp = SCPClient(ssh.get_transport())
+      #   scp.put(self.local_faucet_file,self.remote_faucet_file)
+      #   stdin, stdout, stderr = ssh.exec_command("pkill -HUP ryu-manager")        
+      #   print (stdout.read())
         # os.system("scp "+ self.local_faucet_file +" "+ self.remote_faucet_host+":"+self.remote_faucet_file)
         # #reload faucet.yaml docker 
         # os.system("ssh "+ self.remote_faucet_host + " docker kill --signal=HUP faucet_faucet_1" )
@@ -120,8 +122,12 @@ logging.basicConfig(level=logging.DEBUG)
 ep = netcontrol.Endpoint("bro/event/netcontrol-faucet", "127.0.0.1", 9977)
 
 while 1==1:
+  # try:
     response = ep.getNextCommand()
     print("### Response.type is : ",response.type)
+  # except:
+  #   print ("Exception")
+  #   continue
 
  
     #pp.pprint(response.rule)

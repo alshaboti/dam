@@ -10,18 +10,20 @@
 echo ">>>>>>>>>>>>>>>Pre requisits<<<<<<<<<<<<<<<<<<<<<"
 
 
-echo "git_bro-netcontrol"
-function git_bro-netcontrol(){
-	git clone https://github.com/bro/bro-netcontrol.git
-}
-echo "git_faucetagent"
-function git_faucetagent()
-{
-     git clone https://github.com/faucetsdn/faucetagent.git
-     # remove sudo, as faucet container will run as root
-#     cd faucetagent
-#     sed -i "s/sudo//g" dependencies.sh
-}
+# echo "git_zeek-netcontrol"
+# function git_zeek-netcontrol(){
+# 	git clone https://github.com/zeek/zeek-netcontrol.git
+# }
+
+# echo "git_faucetagent"
+# function git_faucetagent()
+# {
+#      git clone https://github.com/faucetsdn/faucetagent.git
+#      # remove sudo, as faucet container will run as root
+# #     cd faucetagent
+# #     sed -i "s/sudo//g" dependencies.sh
+# }
+
 echo "generate_gNMI_certs"
 function generate_gNMI_certs(){
 	mkdir -p tls_cert_key
@@ -29,19 +31,19 @@ function generate_gNMI_certs(){
 	openssl req -x509 -sha256 -nodes -days 365 -newkey rsa:2048 -keyout tls_cert_key/server/server.key -out tls_cert_key/server/server.crt  -subj '/CN=faucet.localhost'
 	mkdir -p tls_cert_key/client
 	openssl req -x509 -sha256 -nodes -days 365 -newkey rsa:2048 -keyout tls_cert_key/client/client.key -out tls_cert_key/client/client.crt  -subj '/CN=bro.localhost'
+        cp tls_cert_key/server/server.crt tls_cert_key/client/ca.crt
 }
-
 
 echo "############## First: Create and attach to each container ##################### "
 echo "1- Either use tmux and create and attach to each container using the following functions"
-echo "cr_fuacet-cont"
+echo "cr_faucet-cont"
 function cr_faucet-cont(){
-         docker run \
-                   --rm \
-                   --name faucet \
-		   -v /etc/faucet/:/etc/faucet/ \
+                   docker run \
+		   --rm --name faucet \
                    -v /var/log/faucet/:/var/log/faucet/ \
-                   -p 6653:6653 -p 9302:9302  faucet/faucet  faucet
+                   -v $PWD/etc/faucet/:/etc/faucet/ \
+                   -p 6653:6653 -p 9302:9302 \
+		   mohmd/faucet-ssh
 }
 
 echo "cr_server-cont"
@@ -68,13 +70,15 @@ function cr_bro-cont(){
 echo "2- OR create and attach to all container at once using xterm"
 echo "cr_all_conts_with_xterms"
 function cr_all_conts_with_xterms(){
-	xterm -T faucet -e \
-                   docker run \
-                   --rm --name faucet \
-		   -v /etc/faucet/:/etc/faucet/ \
+	xterm -T faucet -e  \
+                    docker run \
+		   --rm --name faucet \
                    -v /var/log/faucet/:/var/log/faucet/ \
+                   -v $PWD/etc/faucet/:/etc/faucet/ \
+				   -v $PWD/tls_cert_key/:/pegler/tls_cert_key/ \
                    -p 6653:6653 -p 9302:9302 \
-		   mohmd/faucet-ssh  bash -c "/usr/sbin/sshd -D ; faucet" &
+                    mohmd/faucet-ssh  	&
+	#bash -c "/usr/sbin/sshd -D ; faucet" &
 		   #mohmd/faucet-ssh bash -c "/etc/init.d/ssh start && faucet" &
 		  
 
@@ -83,22 +87,22 @@ function cr_all_conts_with_xterms(){
                    docker run \
                    --rm  --name host \
                    -it \
-                   python /bin/bash &
+                   python bash &
 
 	xterm -bg NavyBlue -T server -e \
                    docker run \
                    --rm --name server \
                    -it \
-                   python /bin/bash &
+                   python bash &
 
 	xterm -bg Maroon -T broIDS -e \
                    docker run \
                    --rm  --name bro \
                    -it \
-                   -v ${PWD}:/pegler \
-                   -v /etc/faucet/:/etc/faucet/ \
-				   -w /pegler/ \
-				   mohmd/bro-ids /bin/bash &
+		   -v $PWD/src/:/pegler/src/ \
+		   -v $PWD/tls_cert_key/:/pegler/tls_cert_key/ \
+                   -w /pegler/src \
+         	   mohmd/bro-ids /bin/bash &
 }
 
 
@@ -145,11 +149,11 @@ function get_bro-bash(){
 }
 echo "get_bro-bash-xterm"
 function get_bro-bash-xterm(){
-	xterm -T BROterm -bg Maroon -e docker exec -it -w /pegler/ bro /bin/bash &
+	xterm -T broXterm -bg Maroon -e docker exec -it -w /pegler/ bro /bin/bash &
 }
 echo "get_faucet-bash-xterm"
 function get_faucet-bash-xterm(){
-	xterm -T faucet-term -bg Maroon -e docker exec -it -w /pegler/ faucet /bin/bash &
+	xterm -T faucetXterm -e docker exec -it  faucet /bin/bash &
 }
 # faucet  reload 
 echo "faucet_relaod_config"

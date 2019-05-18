@@ -4,11 +4,13 @@ RUN apt update
 RUN apt install cmake make gcc g++ flex bison libpcap-dev libssl-dev python-dev swig zlib1g-dev -y
 RUN apt install git python-pip -y && pip install pyyaml
 RUN git clone --recursive https://github.com/zeek/zeek && cd zeek && ./configure && make && make install
-RUN pip install paramiko scp
+#RUN pip install paramiko scp
+# install zeek-netcontrol
+RUN git clone https://github.com/zeek/zeek-netcontrol.git
 ENV PATH=/usr/local/bro/bin:$PATH
-ENV PYTHONPATH=/usr/local/bro/lib/broctl:/pegler/bro-netcontrol
+ENV PYTHONPATH=/usr/local/bro/lib/broctl:/zeek-netcontrol
 
-#install faucetagent clint
+#install gNMI client
 RUN apt install curl -y
 RUN curl -O https://dl.google.com/go/go1.12.5.linux-amd64.tar.gz
 RUN mkdir /root/go
@@ -21,11 +23,19 @@ RUN go get github.com/google/gnxi/gnmi_capabilities \
     && go get github.com/google/gnxi/gnmi_set \
    && go get github.com/google/gnxi/gnmi_get
 
-COPY faucetagent /faucetagent
+COPY ./ /pegler/
 
-ENV AUTH="-ca /faucetagent/tls_cert_key/client/ca.crt -cert /faucetagent/tls_cert_key/client/client.crt -key /faucetagent/tls_cert_key/client/client.key -target_name faucet.localhost -target_addr=192.168.100.3:10161"
+ENV AUTH="-ca /pegler/tls_cert_key/client/ca.crt -cert /pegler/tls_cert_key/client/client.crt -key /pegler/tls_cert_key/client/client.key -target_name faucet.localhost -target_addr=192.168.100.3:10161"
 
-#RUN gnmi_capabilities $AUTH
-#RUN gnmi_get $AUTH -xpath=/ 
+
+
+
+# CMD python simple-client.py          # 1
+# CMD zeek -C -i eth2 simple-test.bro  # 2
+
+# gnmi_capabilities $AUTH
+# gnmi_get $AUTH -xpath=/|grep string_val: | awk -F 'string_val: "' '{printf $2;}'  | sed -e 's/"$//' | xargs -0 printf; 
+# gnmi_set $AUTH -replace=/:"$(<../etc/faucet/faucet.yaml)"
+# use gnmi_get_scr.sh and gnmi_set_scr.sh scripts
 
 # sudo docker build -t mohmd/bro-ids -f ./Dockerfile.bro-ids .
