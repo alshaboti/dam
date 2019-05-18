@@ -145,10 +145,9 @@ event file_hash(f: fa_file, kind: string, hash: string)
 		for ( cid in f$conns )
 		{
 			#print f$conns[cid]$uid;
-			print "Rule is sent to drop connection: ", cid;
-        	NetControl::drop_address(cid$orig_h, 5sec, "hi there");
+			print "Rule is sent to drop connection: ", cid;       	
 
-			#drop_connection(cid, 500 secs);
+			drop_connection(cid, 500 secs);
 		}		
 	}
 

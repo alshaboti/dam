@@ -20,6 +20,7 @@ RUN apt-get install curl gnupg apt-transport-https lsb-release -y \
 
 # Install faucetagent
 COPY ./  /pegler/
+COPY ./etc/faucet/faucet.yaml /etc/faucet/faucet.yaml
 RUN apt install git -y
 RUN git clone https://github.com/faucetsdn/faucetagent.git \
     && cd /faucetagent && sed -i "s/sudo//g" dependencies.sh && ./dependencies.sh
@@ -34,5 +35,5 @@ ExPOSE 6653
 CMD /etc/init.d/ssh start && faucet 
 
 # You need to run gnmi agent using 
-# sudo docker exec -it faucet ./faucetagent/faucetagent.py --cert /pegler/tls_cert_key/server/server.crt  --key /pegler/tls_cert_key/server/server.key --configfile /etc/faucet/faucet.yaml 
-# sudo docker build -t mohmd/faucet-ssh -f Dockerfile.faucet-ssh .
+# sudo docker exec faucet ./faucetagent/faucetagent.py --cert /pegler/tls_cert_key/server/server.crt  --key /pegler/tls_cert_key/server/server.key --configfile /etc/faucet/faucet.yaml 
+# sudo docker build -t mohmd/faucet-agent -f Dockerfile.faucet-agent .

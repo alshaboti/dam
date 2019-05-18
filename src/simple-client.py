@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
-import os
+import subprocess, os
+
 from yaml import load, dump, YAMLError, safe_dump, dumper
 import json
 import logging
@@ -49,14 +50,16 @@ class faucet_management:
   def __init__(self):
     self.remote_faucet_host = "192.168.100.3"
     self.remote_faucet_file = "/etc/faucet/faucet.yaml"
-    self.local_faucet_file = "../etc/faucet/faucet.yaml"
+    self.local_faucet_file = "../etc/faucet/faucet.zeek.yaml"
     self.get_faucet_yaml(remote=True)
 
   # get faucet yaml file using ssh client 
   def get_faucet_yaml(self, remote = False):
+      
       if remote:
-        #os.system("echo $AUTH")
-        os.system("./gnmi_get_src.sh")
+        subprocess.call("./gnmi_get_scr.sh", shell=True)
+        #os.system("/bin/bash ./gnmi_get_src.sh")
+
       #   ssh = createSSHClient(self.remote_faucet_host, 22, "root", "changeme")
       #   scp = SCPClient(ssh.get_transport())
       #   scp.get(self.remote_faucet_file,self.local_faucet_file)
@@ -77,7 +80,9 @@ class faucet_management:
       # it works as long as you set ssh key between the two hosts
       # scp faucet.yaml to remote faucet
       if remote:
-        os.system("./gnmi_set_src.sh")
+        proc = subprocess.Popen(["./gnmi_set_scr.sh"], stdout=subprocess.PIPE, shell=True)
+        (out, err) = proc.communicate()
+        print ("gnmi_set_src output:", out)
       #   ssh = createSSHClient("192.168.100.3", 22, "root", "changeme")
       #   scp = SCPClient(ssh.get_transport())
       #   scp.put(self.local_faucet_file,self.remote_faucet_file)

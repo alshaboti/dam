@@ -7,4 +7,4 @@ string_val() { grep string_val: | awk -F 'string_val: "' '{printf $2;}'  |
 #gnmi_capabilities $AUTH
 
 # Fetch current configuration
-gnmi_get $AUTH -xpath=/ | string_val > ../etc/faucet/faucet.yaml
+gnmi_get $AUTH -xpath=/ | string_val > ../etc/faucet/faucet.zeek.yaml

@@ -59,13 +59,13 @@ Start by sourcing `setup.sh` file.
 source setup.sh
 ```
 The `setup.sh` bash file contains scripts to: 
-- `generate_gNMI_certs`: create fake certificates and keys for gNMI client and agent between zeek/bro and faucet.
--`cr_all_conts_with_xterms`: create faucet, bro, server, client docker containers.
-- `get_zeek-bash-xterm`: Get another xterm for bro.
-- `create_bro_net`: Create OVS and connect docker containers.  
-- `check_bro_net`: Check the network setup. 
-- `clear_bro_net_all` Clear all. 
-- `faucet_relaod_config` Reload faucet configuration file. 
+- `generate_gNMI_certs`: create fake certificates and keys for gNMI client and agent between zeek/bro and faucet. 
+-`cr_all_conts_with_xterms`: create faucet, bro, server, client docker containers. 
+- `get_X-bash-xterm`: Get another xterm for X container. 
+- `create_zeek_net`: Create OVS and connect docker containers.   
+- `check_zeek_net`: Check the network setup. 
+- `clear_zeek_net_all` Clear all.  
+- `faucet_relaod_config` Reload faucet configuration file.  
 
 ## Run the test
 In this test, Bro sends block rules to python script to block a connection that carry the `bash` file (when client request `/bin/bash` file from the webserver). 
@@ -73,23 +73,35 @@ In this test, Bro sends block rules to python script to block a connection that 
 # log in as root or in docker group
 su - 
 soruce setup.sh
+
+# generate fake cert for gNMI agent and client
 generate_gNMI_certs
+
+# create all containers
 cr_all_conts_with_xterms
+
+#make ovs network
+create_ovs_net
 ```
-Then:
-1- Start by running python broker, that will receive Bro events through NetControl framework.
-It will use `gNMI` to request current `faucet.yaml` file from `faucet` container.  
-On xterm window of BRO run 
+Then follow the follwoing steps:  
+1- Start by running faucet gNMI agent
+```
+get_faucet-agent-xterm
+```
+2- Run python broker. 
+It receives zeek events through NetControl framework, and uses `gNMI` to get/set  `faucet.yaml` file from `faucet` container.  
+On the xterm window of Zeek run  
 ```
 python simple-client.py
 ```
-2- Now run Bro/Zeek instant on the other xterm bro window. 
+3- Run Zeek.  
+open new Zeek xterm bro window. 
 ```
-get_zeek-bash-xterm
+get_X-bash-xterm zeek
 zeek -C -i eth2 simple-test.bro
 ```
-
-3- Now, we are ready to make some connections. On server xterm  run simple web server
+4- Now run http server on the server xterm 
+Now, we are ready to make some connections. On server xterm  run simple web server 
 ```
 python -m http.server 8000
 ```
@@ -141,7 +153,7 @@ Python script `Simple-client.py` will install faucet rules to block the connecti
 
 * To delete all network settings for this test (e.e. containers and ovs) run
 ```
-clear_bro_net_all
+clear_ovs_net_all
 ```
 
 More abotu netControl is in here https://docs.zeek.org/en/stable/frameworks/netcontrol.html
@@ -156,8 +168,8 @@ Tested with OVS, test script modified from https://github.com/bro/bro-netcontrol
 - Update all scripts to use zeek instead of bro
 
 ## TODO
-- Check why `python simple-client` stop working after updating bro to zeek.
-
+- Make test scripts.
+- Support shunt-flow,whitelist,redirect,quarantine
 
 ## Inter-containers communication 
 For testing we can use docker API to send HUP signal to faucet, instead of using ssh.
@@ -182,15 +194,11 @@ FROM faucet/faucet
 RUN apk update 
 RUN apk add openrc --no-cache 
 RUN apk add openssh-server --no-cache
-RUN rc-update add sshd && \
-    rc-status 
+RUN rc-update add sshd && rc-status 
 RUN touch /run/openrc/softlevel 
-
 RUN /etc/init.d/sshd start
 RUN /etc/init.d/sshd status
-
 ```
-
 I this  error, and ssh crashed
 ```
  You are attempting to run an openrc service on a
@@ -199,8 +207,10 @@ I this  error, and ssh crashed
 
 Shift to build fuacet on `ubuntu` rather than add `ssh` service on `faucet/faucet`
 image that is based on `Alpine linux`.
+
 ### Zeek
 - Zeek/bro doesn't sniff files unless python server is running on port 8000?  
+- deprecated bro.event usage error in `netcontrol/api.py`. Replace all `broker.bro` by `broker.zeek` in `api.py` file.
 ### faucetagent 
 ```
 # $(<faucet.yaml) not working , need to be "$(<faucet.yaml)"
