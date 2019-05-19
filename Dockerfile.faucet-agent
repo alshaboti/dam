@@ -20,7 +20,6 @@ RUN apt-get install curl gnupg apt-transport-https lsb-release -y \
 
 # Install faucetagent
 COPY ./  /pegler/
-COPY ./etc/faucet/faucet.yaml /etc/faucet/faucet.yaml
 RUN apt install git -y
 RUN git clone https://github.com/faucetsdn/faucetagent.git \
     && cd /faucetagent && sed -i "s/sudo//g" dependencies.sh && ./dependencies.sh

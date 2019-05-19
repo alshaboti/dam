@@ -50,7 +50,7 @@ class faucet_management:
   def __init__(self):
     self.remote_faucet_host = "192.168.100.3"
     self.remote_faucet_file = "/etc/faucet/faucet.yaml"
-    self.local_faucet_file = "../etc/faucet/faucet.zeek.yaml"
+    self.local_faucet_file = "../etc/faucet/faucet.zeek.yaml"    
     self.get_faucet_yaml(remote=True)
 
   # get faucet yaml file using ssh client 
@@ -92,6 +92,41 @@ class faucet_management:
         # #reload faucet.yaml docker 
         # os.system("ssh "+ self.remote_faucet_host + " docker kill --signal=HUP faucet_faucet_1" )
 
+  def get_match(self,nc_entity):
+    if nc_entity['ty'] == 'FLOW':
+      nc_flow =  nc_entity['flow']
+      match = {
+              'dl_type': 0x800 \
+              ,'ipv4_src':nc_flow['src_h'].split('/')[0] \
+              ,'ipv4_dst':nc_flow['dst_h'].split('/')[0] \
+      }
+
+      if nc_flow['src_p'][1] == '/udp':
+        match['udp_dst']= int(nc_flow['dst_p'][0])
+        match['udp_src']= int(nc_flow['src_p'][0]) 
+        match['nw_proto']= 16
+      elif nc_flow['src_p'][1] == '/tcp':
+        match['tcp_dst']= int(nc_flow['dst_p'][0])
+        match['tcp_src']= int(nc_flow['src_p'][0]) 
+        match['nw_proto']= 6
+      if nc_flow['dst_m'] is not None:
+        match['eth_src'] = nc_flow['src_m']
+        match['eth_dst'] = nc_flow['dst_m']
+      return match
+    return {}
+      
+
+
+  def create_redirect_rule(self, nc_rule):
+    faucet_match = self.get_match(nc_rule['entity'])
+    faucet_rule = {'rule':faucet_match}
+    # build action
+    faucet_rule['rule']['actions']={
+      'output': {
+        'port': int(nc_rule['out_port']) 
+        }
+        }
+    return faucet_rule
 
   def create_rule(self, con ):
     proto_type = 6
@@ -110,7 +145,6 @@ class faucet_management:
 
   def add_rule(self, new_rule):    
 
-
     #update_rule_allow(new_rule, self.faucet_yaml["acls"]["def_acl"])
     
     if not is_rule_exist(new_rule, self.faucet_yaml["acls"]["def_acl"]):
@@ -127,29 +161,64 @@ logging.basicConfig(level=logging.DEBUG)
 ep = netcontrol.Endpoint("bro/event/netcontrol-faucet", "127.0.0.1", 9977)
 
 while 1==1:
-  # try:
+
     response = ep.getNextCommand()
     print("### Response.type is : ",response.type)
-  # except:
-  #   print ("Exception")
-  #   continue
+    if not (response.type == netcontrol.ResponseType.AddRule or \
+       response.type == netcontrol.ResponseType.RemoveRule) :        
+       # ConnectionEstablished = 1, Error = 2, AddRule = 3, RemoveRule = 4, SelfEvent = 5
+       # response.type >>  https://github.com/zeek/zeek-netcontrol/blob/master/netcontrol/api.py#L91
+        continue
 
- 
-    #pp.pprint(response.rule)
-    if response.type == netcontrol.ResponseType.AddRule:
-        new_rule  = faucet_mng.create_rule(response.rule["entity"]["conn"])
+
+    if response.rule['ty'] == 'WHITELIST':
+      print (" Rule type: WHITELIST")
+    elif response.rule['ty'] == 'REDIRECT':
+      print ("Rule type: REDIRECT")
+      if response.rule['target'] == 'FORWARD':
+        new_rule  = faucet_mng.create_redirect_rule(response.rule)
+        pp.pprint(new_rule)
         faucet_mng.add_rule(new_rule)
         ep.sendRuleAdded(response, "OK")
 
-    elif response.type == netcontrol.ResponseType.RemoveRule:
-        new_rule  = faucet_mng.create_rule(response.rule["entity"]["conn"])
-        faucet_mng.add_rule(new_rule)
-        ep.sendRuleRemoved(response, "OK")
-       
-    else:
-        print("responsee.type isn't add or remove rule: ", response.type)
-        continue
 
-    print("Rule type: ", response.rule['ty'])
-    print("entity: ", response.rule["entity"])
-    
+    elif response.rule['ty'] == 'DROP':
+      print ("Rule type: REDIRECT")
+    elif response.rule['ty'] == 'MODIFY':
+      print ("Rule type: MODIFY")
+  
+    pp.pprint(response.rule)
+
+    # if response.type == netcontrol.ResponseType.AddRule:
+    #     new_rule  = faucet_mng.create_rule(response.rule["entity"]["conn"])
+    #     faucet_mng.add_rule(new_rule)
+    #     ep.sendRuleAdded(response, "OK")
+
+    # elif response.type == netcontrol.ResponseType.RemoveRule:
+    #     new_rule  = faucet_mng.create_rule(response.rule["entity"]["conn"])
+    #     faucet_mng.add_rule(new_rule)
+    #     ep.sendRuleRemoved(response, "OK")
+
+# 	NetControl::redirect_flow([$src_h=192.168.17.1, $src_p=32/tcp, 
+#                              $dst_h=192.168.17.2, $dst_p=32/tcp], 5, 30sec);
+# keys are entity, target, and type
+# https://docs.zeek.org/en/stable/frameworks/netcontrol.html#rule-api  
+# {   'cid': 5L,
+#     'entity': {   'conn': None,
+#                   'flow': {   'dst_h': '192.168.17.2/32',
+#                               'dst_m': None,
+#                               'dst_p': ('32', '/tcp'),
+#                               'src_h': '192.168.17.1/32',
+#                               'src_m': None,
+#                               'src_p': ('32', '/tcp')},
+#                   'ip': None,
+#                   'mac': None,
+#                   'ty': u'FLOW'},
+#     'expire': datetime.timedelta(0, 30),
+#     'id': u'5',
+#     'location': u'',
+#     'mod': None,
+#     'out_port': 5L,
+#     'priority': 0L,
+#     'target': u'FORWARD',
+#     'ty': u'REDIRECT'}

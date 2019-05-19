@@ -16,6 +16,9 @@ event NetControl::init_done() &priority=-5
  event new_connection(c: connection)
 	{
 		print "new Connection!";
+    	# NetControl::redirect_flow([$src_h=192.168.17.1, $src_p=32/tcp, $dst_h=192.168.17.2, $dst_p=32/tcp], 5, 30sec);
+        NetControl::whitelist_address(1.2.3.4, 15sec);		
+		#NetControl::redirect_flow([$src_h=c$id$orig_h, $src_m = "FF:FF:FF:BB:BB:AA", $src_p=c$id$orig_p, $dst_h=c$id$resp_h, $dst_m="FF:FF:FF:BB:BB:AA", $dst_p=c$id$resp_p], $out_port=5, $t=30sec);
 
 	}
 
@@ -33,6 +36,7 @@ function drop_connection(c: conn_id, t: interval)
 	if ( id == "" )
 		print "Error while dropping";
 	}
+
 function allow_connection(c: conn_id, t: interval)
 	{
 	# As a first step, create the NetControl::Entity that we want to block
@@ -47,6 +51,15 @@ function allow_connection(c: conn_id, t: interval)
 	if ( id == "" )
 		print "Error while whitelisting";
 	}	
+
+function redirect_connection(c: conn_id, t: interval)
+	{
+
+#	NetControl::redirect_flow([$src_h=c$orig_h, $src_m = "FF:FF:FF:BB:BB:AA", $src_p=c$orig_p, $dst_h=c$resp_h, $dst_m="FF:FF:FF:BB:BB:AA", $dst_p=c$resp_p], $out_port=3, $t=300sec);
+
+	}	
+
+
 function drop_allow_NetControl(id: conn_id, t: interval, action: string)	
 {
 	# dropy by ip
@@ -58,27 +71,24 @@ function drop_allow_NetControl(id: conn_id, t: interval, action: string)
 	# 	NetControl::redirect_flow([$src_h=c$id$orig_h, $src_m = "FF:FF:FF:BB:BB:AA", $src_p=c$id$orig_p, $dst_h=c$id$resp_h, $dst_m="FF:FF:FF:BB:BB:AA", $dst_p=c$id$resp_p], $out_port=5, $t=30sec);
 	# else if(action == "quarantine")				
 	# 	NetControl::quarantine_host($infected=c$id$orig_h, $dns=8.8.8.8, $quarantine=127.0.0.3, $t=15sec);
-
 }
+
 # event connection_established(c: connection)
 #     {	
 # 		print "Connection established";
 # 		#at brocker subs: response.rule["entity"]
-
 # 		# direct way to drop by 4tuples
 #         #drop_connection(c$id, 4 secs);
-
 # 		# direct way to allow by 4tuples
-#         #allow_connection(c$id, 4 secs);
-        
+#         #allow_connection(c$id, 4 secs);        
 #     }
 
 # event  http_stats (c: connection, stats: http_stats_rec){
 # 		#print "http stats";
 # 	}
 
-# event icmp_echo_request (c: connection, icmp: icmp_conn, id: count, seq: count, payload: string){
-
+# event icmp_echo_request (c: connection, icmp: icmp_conn, id: count, seq: count, payload: string)
+# {
 # 		print( c$id$orig_h );
 # 		if ( |NetControl::find_rules_addr(c$id$orig_h)| > 0 )
 # 		{
@@ -103,16 +113,8 @@ event NetControl::rule_added(r: NetControl::Rule, p: NetControl::PluginState, ms
 event file_new(f: fa_file)
     {
 		print "new File";
-   Files::add_analyzer(f, Files::ANALYZER_MD5);
+        Files::add_analyzer(f, Files::ANALYZER_MD5);
 
-#    local ext = "";
-    #print f;
-    # if ( f?$mime_type )
-    #     ext = ext_map[f$mime_type];
-
- #   local fname = fmt("%s-%s", f$source, f$id);
-#	print fname;
-    #Files::add_analyzer(f, Files::ANALYZER_EXTRACT, [$extract_filename=fname]);
     }
 
 #https://docs.zeek.org/en/latest/scripts/base/bif/event.bif.zeek.html#id-file_new
