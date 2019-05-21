@@ -6,6 +6,16 @@ acls:
   def_acl:
   - rule:
       actions:
+        output:
+          port: 3
+      dl_type: 2048
+      ipv4_dst: 192.168.17.2
+      ipv4_src: 192.168.17.1
+      nw_proto: 6
+      tcp_dst: 32
+      tcp_src: 32
+  - rule:
+      actions:
         allow: true
   mirror_acl:
   - rule:

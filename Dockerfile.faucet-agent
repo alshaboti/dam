@@ -1,29 +1,19 @@
 FROM ubuntu:16.04
 
-RUN apt-get update && apt-get install -y openssh-server
-RUN mkdir /var/run/sshd
-RUN echo 'root:changeme' | chpasswd
-RUN sed -i 's/PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
-
-# SSH login fix. Otherwise user is kicked off after login
-RUN sed 's@session\s*required\s*pam_loginuid.so@session optional pam_loginuid.so@g' -i /etc/pam.d/sshd
-
-ENV NOTVISIBLE "in users profile"
-RUN echo "export VISIBLE=now" >> /etc/profile
+RUN apt-get update
 
 # install Faucet
-RUN apt-get install curl gnupg apt-transport-https lsb-release -y \
-    && echo "deb https://packagecloud.io/faucetsdn/faucet/$(lsb_release -si | awk '{print tolower($0)}')/ $(lsb_release -sc) main" | tee /etc/apt/sources.list.d/faucet.list \
-    && curl -L https://packagecloud.io/faucetsdn/faucet/gpgkey | apt-key add - \
-    && apt-get update \
-    && apt-get install faucet -y
+RUN apt-get install python3-dev python3-pip -y \
+    && pip3 install setuptools \
+    && pip3 install wheel \
+    && apt-get install wget git -y 
+
+RUN pip3 install faucet
 
 # Install faucetagent
 COPY ./  /pegler/
-RUN apt install git -y
 RUN git clone https://github.com/faucetsdn/faucetagent.git \
     && cd /faucetagent && sed -i "s/sudo//g" dependencies.sh && ./dependencies.sh
-
 RUN  cd /faucetagent && make
 
 # faucetagent uses fuser utility for reloading faucet.yaml file
@@ -31,7 +21,7 @@ RUN apt install psmisc
 
 ExPOSE 6653
 
-CMD /etc/init.d/ssh start && faucet 
+CMD faucet #/etc/init.d/ssh start && faucet 
 
 # You need to run gnmi agent using 
 # sudo docker exec faucet ./faucetagent/faucetagent.py --cert /pegler/tls_cert_key/server/server.crt  --key /pegler/tls_cert_key/server/server.key --configfile /etc/faucet/faucet.yaml 

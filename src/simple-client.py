@@ -7,17 +7,8 @@ import json
 import logging
 import netcontrol
 import pprint
-#import paramiko 
-#from scp import SCPClient
 
 pp = pprint.PrettyPrinter(indent=5)
-
-# def createSSHClient(server, port, user, password):
-#     client = paramiko.SSHClient()
-#     client.load_system_host_keys()
-#     client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-#     client.connect(server, port, user, password)
-#     return client
 
 
 def is_rule_exist(rule, acl_list):
@@ -58,11 +49,6 @@ class faucet_management:
       
       if remote:
         subprocess.call("./gnmi_get_scr.sh", shell=True)
-        #os.system("/bin/bash ./gnmi_get_src.sh")
-
-      #   ssh = createSSHClient(self.remote_faucet_host, 22, "root", "changeme")
-      #   scp = SCPClient(ssh.get_transport())
-      #   scp.get(self.remote_faucet_file,self.local_faucet_file)
 
       with open(self.local_faucet_file, 'r') as file_stream:
         try:
@@ -77,20 +63,11 @@ class faucet_management:
       noalias_dumper.ignore_aliases = lambda self, data: True
       with open(self.local_faucet_file, "w") as fd:
           dump(self.faucet_yaml, fd, default_flow_style=False, Dumper=noalias_dumper)
-      # it works as long as you set ssh key between the two hosts
-      # scp faucet.yaml to remote faucet
       if remote:
         proc = subprocess.Popen(["./gnmi_set_scr.sh"], stdout=subprocess.PIPE, shell=True)
         (out, err) = proc.communicate()
         print ("gnmi_set_src output:", out)
-      #   ssh = createSSHClient("192.168.100.3", 22, "root", "changeme")
-      #   scp = SCPClient(ssh.get_transport())
-      #   scp.put(self.local_faucet_file,self.remote_faucet_file)
-      #   stdin, stdout, stderr = ssh.exec_command("pkill -HUP ryu-manager")        
-      #   print (stdout.read())
-        # os.system("scp "+ self.local_faucet_file +" "+ self.remote_faucet_host+":"+self.remote_faucet_file)
-        # #reload faucet.yaml docker 
-        # os.system("ssh "+ self.remote_faucet_host + " docker kill --signal=HUP faucet_faucet_1" )
+
 
   def get_match(self,nc_entity):
     if nc_entity['ty'] == 'FLOW':
