@@ -70,55 +70,151 @@ class faucet_management:
 
 
   def get_match(self,nc_entity):
+    match = {}
+    nw_proto = None
     if nc_entity['ty'] == 'FLOW':
       nc_flow =  nc_entity['flow']
-      match = {
-              'dl_type': 0x800 \
-              ,'ipv4_src':nc_flow['src_h'].split('/')[0] \
-              ,'ipv4_dst':nc_flow['dst_h'].split('/')[0] \
-      }
+      if nc_flow['src_h'] is not None or nc_flow['dst_h'] is not None:
+        match = {
+                'dl_type': 0x800 
+        }
 
-      if nc_flow['src_p'][1] == '/udp':
-        match['udp_dst']= int(nc_flow['dst_p'][0])
+      if nc_flow['src_h'] is not None:
+        match['ipv4_src'] = nc_flow['src_h'].split('/')[0] 
+      if nc_flow['dst_h'] is not None:
+        match ['ipv4_dst'] = nc_flow['dst_h'].split('/')[0]         
+  
+      if nc_flow['src_p'] is not None and nc_flow['src_p'][1] == '/udp':
         match['udp_src']= int(nc_flow['src_p'][0]) 
         match['nw_proto']= 16
-      elif nc_flow['src_p'][1] == '/tcp':
-        match['tcp_dst']= int(nc_flow['dst_p'][0])
+        nw_proto = 'udp'
+        
+      if nc_flow['dst_p'] is not None and nc_flow['dst_p'][1] == '/udp':
+        match['udp_dst']= int(nc_flow['dst_p'][0])
+        match['nw_proto']= 16
+        nw_proto = 'udp'
+
+      if nc_flow['src_p'] is not None and nc_flow['src_p'][1] == '/tcp':
         match['tcp_src']= int(nc_flow['src_p'][0]) 
         match['nw_proto']= 6
+        nw_proto = 'tcp'
+      if nc_flow['dst_p'] is not None and nc_flow['dst_p'][1] == '/tcp':
+        match['tcp_dst']= int(nc_flow['dst_p'][0])
+        match['nw_proto']= 6
+        nw_proto = 'tcp'
+      # mac
+      if nc_flow['src_m'] is not None:
+        match['eth_src'] = str(nc_flow['src_m'])
       if nc_flow['dst_m'] is not None:
-        match['eth_src'] = nc_flow['src_m']
-        match['eth_dst'] = nc_flow['dst_m']
-      return match
-    return {}
-      
+        match['eth_dst'] = str(nc_flow['dst_m'])
+
+    elif nc_entity['ty'] == 'CONNECTION':
+      nc_conn = nc_entity['conn']
+      if nc_conn['orig_h'] is not None:
+        match = {
+                'dl_type': 0x800 \
+                ,'ipv4_src':nc_conn['orig_h'].split('/')[0] \
+        }
+      if nc_conn['resp_h'] is not None:
+        match = {
+                'dl_type': 0x800 \
+                ,'ipv4_dst':nc_conn['resp_h'].split('/')[0] \
+        }
+      if  nc_conn['orig_p'] is not None and nc_conn['orig_p'][1] == '/udp':
+        match['udp_dst']= int(nc_conn['resp_p'][0])
+        #match['udp_src']= int(nc_conn['orig_p'][0]) 
+        match['nw_proto']= 16
+        nw_proto = 'udp'
+
+      elif nc_conn['orig_p'] is not None and nc_conn['orig_p'][1] == '/tcp':
+        match['tcp_dst']= int(nc_conn['resp_p'][0])
+        #match['tcp_src']= int(nc_conn['origi_p'][0]) 
+        match['nw_proto']= 6
+        nw_proto = 'tcp'
+
+    elif nc_entity['ty'] == 'ADDRESS':
+      match = {
+        'ipv4_src': nc_entity['ip'].split('/')[0]         
+      }
+
+    elif nc_entity['ty'] == 'MAC':
+      match = {
+        'eth_src': str(nc_entity['mac'])
+      }
+
+    return match, nw_proto
 
 
-  def create_redirect_rule(self, nc_rule):
-    faucet_match = self.get_match(nc_rule['entity'])
+  def get_actions(self, nc_rule, nw_proto):
+    actions ={}
+    if nc_rule['target']=='FORWARD':
+      # REDIRECT
+      if  nc_rule['ty'] =='REDIRECT':
+        actions = {
+        'output': {
+                  'port': int(nc_rule['out_port']) 
+                  }
+        }    
+      # allow
+      elif  nc_rule['ty'] =='WHITELIST':  
+        actions = {'allow': True }
+      # block
+      elif  nc_rule['ty'] =='DROP':  
+        actions = {'allow': False }
+
+      # mod  
+      elif nc_rule['ty'] == 'MODIFY':
+        set_fields = []
+        if nc_rule['mod']['dst_h'] is not None:
+          set_fields.append({'ipv4_dst': nc_rule['mod']['dst_h'] })
+        if nc_rule['mod']['src_h'] is not None:
+          set_fields.append({'ipv4_src': nc_rule['mod']['src_h'] })
+
+        if nc_rule['mod']['dst_p'] is not None:
+          if nw_proto =='tcp':
+            set_fields.append({'tcp_src': nc_rule['mod']['dst_p'] })
+          elif nw_proto =='udp':
+            set_fields.append({'udp_src': nc_rule['mod']['dst_p'] })
+        if nc_rule['mod']['src_p'] is not None:
+          if nw_proto == 'tcp':
+            set_fields.append({'tcp_src': nc_rule['mod']['src_p'] })
+          elif nw_proto == 'tcp':
+            set_fields.append({'udp_src': nc_rule['mod']['src_p'] })
+
+        actions = {
+                'output': {
+                  'set_fields': set_fields                  
+                  }
+        }    
+
+        if nc_rule['mod']['redirect_port'] is not None:
+          actions['output'] ['port']  = nc_rule['mod']['redirect_port']
+
+          # 'mod': {    'dst_h': None,
+          #        'dst_m': None,
+          #        'dst_p': None,
+          #        'redirect_port': None,
+          #        'src_h': '8.8.8.8',
+          #        'src_m': None,
+          #        'src_p': None},
+
+
+    elif nc_rule['target']=='MONITOR':
+      #SHUNT
+      if  nc_rule['ty'] =='DROP':  
+        # we may do something other than drop
+        actions = {'allow': False }
+
+
+    return actions
+
+  def create_rule(self, nc_rule):
+    faucet_match, nw_proto = self.get_match(nc_rule['entity'])
     faucet_rule = {'rule':faucet_match}
     # build action
-    faucet_rule['rule']['actions']={
-      'output': {
-        'port': int(nc_rule['out_port']) 
-        }
-        }
+    faucet_rule['rule']['actions']= self.get_actions(nc_rule, nw_proto)
     return faucet_rule
 
-  def create_rule(self, con ):
-    proto_type = 6
-    allow = False
-    if con['resp_p'][1] =='/udp':
-      proto_type = 16
-    if response.rule['ty'] == 'WHITELIST':
-      allow = True
-    new_rule = {'rule':{'dl_type': 0x800 \
-                        ,'ipv4_src':con['orig_h'] \
-                        ,'ipv4_dst':con['resp_h'] \
-                        ,'nw_proto': proto_type \
-                        ,'tcp_dst': int(con['resp_p'][0]) \
-                        ,'actions': {'allow': allow}}}
-    return new_rule
 
   def add_rule(self, new_rule):    
 
@@ -141,40 +237,30 @@ while 1==1:
 
     response = ep.getNextCommand()
     print("### Response.type is : ",response.type)
+    pp.pprint(response.rule)
     if not (response.type == netcontrol.ResponseType.AddRule or \
        response.type == netcontrol.ResponseType.RemoveRule) :        
        # ConnectionEstablished = 1, Error = 2, AddRule = 3, RemoveRule = 4, SelfEvent = 5
        # response.type >>  https://github.com/zeek/zeek-netcontrol/blob/master/netcontrol/api.py#L91
         continue
-
-
-    if response.rule['ty'] == 'WHITELIST':
-      print (" Rule type: WHITELIST")
-    elif response.rule['ty'] == 'REDIRECT':
-      print ("Rule type: REDIRECT")
-      if response.rule['target'] == 'FORWARD':
-        new_rule  = faucet_mng.create_redirect_rule(response.rule)
+    if response.rule['target'] == 'FORWARD' and \
+      response.rule['ty'] in ['WHITELIST','REDIRECT','DROP','MODIFY']:
+      
+      new_rule  = faucet_mng.create_rule(response.rule)
+      if new_rule is not None:
+        pp.pprint(new_rule)
+        faucet_mng.add_rule(new_rule)
+        ep.sendRuleAdded(response, "OK")
+    #SHUNT
+    elif response.rule['target'] == 'MONITOR' and \
+      response.rule['ty'] =='DROP':      
+      new_rule  = faucet_mng.create_rule(response.rule)
+      if new_rule is not None:
         pp.pprint(new_rule)
         faucet_mng.add_rule(new_rule)
         ep.sendRuleAdded(response, "OK")
 
 
-    elif response.rule['ty'] == 'DROP':
-      print ("Rule type: REDIRECT")
-    elif response.rule['ty'] == 'MODIFY':
-      print ("Rule type: MODIFY")
-  
-    pp.pprint(response.rule)
-
-    # if response.type == netcontrol.ResponseType.AddRule:
-    #     new_rule  = faucet_mng.create_rule(response.rule["entity"]["conn"])
-    #     faucet_mng.add_rule(new_rule)
-    #     ep.sendRuleAdded(response, "OK")
-
-    # elif response.type == netcontrol.ResponseType.RemoveRule:
-    #     new_rule  = faucet_mng.create_rule(response.rule["entity"]["conn"])
-    #     faucet_mng.add_rule(new_rule)
-    #     ep.sendRuleRemoved(response, "OK")
 
 # 	NetControl::redirect_flow([$src_h=192.168.17.1, $src_p=32/tcp, 
 #                              $dst_h=192.168.17.2, $dst_p=32/tcp], 5, 30sec);

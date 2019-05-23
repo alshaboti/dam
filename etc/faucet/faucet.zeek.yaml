@@ -6,14 +6,37 @@ acls:
   def_acl:
   - rule:
       actions:
-        output:
-          port: 3
+        allow: true
       dl_type: 2048
-      ipv4_dst: 192.168.17.2
-      ipv4_src: 192.168.17.1
+      ipv4_dst: 127.0.0.3
+      ipv4_src: 127.0.0.2
       nw_proto: 6
-      tcp_dst: 32
-      tcp_src: 32
+      tcp_dst: 80
+  - rule:
+      actions:
+        output:
+          set_fields:
+          - ipv4_src: 8.8.8.8
+      dl_type: 2048
+      ipv4_dst: 127.0.0.2
+      ipv4_src: 8.8.8.8
+      nw_proto: 16
+      udp_src: 53
+  - rule:
+      actions:
+        output:
+          set_fields:
+          - ipv4_dst: 127.0.0.3
+      dl_type: 2048
+      ipv4_dst: 8.8.8.8
+      ipv4_src: 127.0.0.2
+      nw_proto: 16
+      udp_dst: 53
+  - rule:
+      actions:
+        allow: false
+      dl_type: 2048
+      ipv4_src: 127.0.0.2
   - rule:
       actions:
         allow: true

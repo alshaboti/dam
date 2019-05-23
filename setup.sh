@@ -159,10 +159,10 @@ function get_faucet-agent-xterm(){
 # 	xterm -T faucetXterm -e docker exec -it  faucet /bin/bash &
 #}
 # faucet  reload 
-echo "faucet_relaod_config"
-function fuacet_reload_config(){
-	docker kill --signal=HUP faucet
-}
+#echo "faucet_relaod_config"
+#function faucet_reload_config(){
+#	docker kill --signal=HUP faucet
+#}
 
 
 echo "################### Remove everything ########################"

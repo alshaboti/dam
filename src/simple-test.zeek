@@ -17,10 +17,13 @@ event NetControl::init_done() &priority=-5
 	{
 		print "new Connection!";
     	# NetControl::redirect_flow([$src_h=192.168.17.1, $src_p=32/tcp, $dst_h=192.168.17.2, $dst_p=32/tcp], 5, 30sec);
-        NetControl::whitelist_address(1.2.3.4, 15sec);		
+  #      NetControl::drop_address(1.1.2.2, 15sec, "Hi there"); # not received in the python
 		#NetControl::redirect_flow([$src_h=c$id$orig_h, $src_m = "FF:FF:FF:BB:BB:AA", $src_p=c$id$orig_p, $dst_h=c$id$resp_h, $dst_m="FF:FF:FF:BB:BB:AA", $dst_p=c$id$resp_p], $out_port=5, $t=30sec);
+  	#NetControl::shunt_flow([$src_h=192.168.17.1, $src_p=32/tcp, $dst_h=192.168.17.2, $dst_p=32/tcp], 30sec);
 
 	}
+
+
 
 function drop_connection(c: conn_id, t: interval)
 	{
