@@ -39,4 +39,4 @@ ENV AUTH="-ca /pegler/tls_cert_key/client/ca.crt -cert /pegler/tls_cert_key/clie
 # gnmi_set $AUTH -replace=/:"$(<../etc/faucet/faucet.yaml)"
 # use gnmi_get_scr.sh and gnmi_set_scr.sh scripts
 
-# sudo docker build -t mohmd/zeek-ids -f ./Dockerfile.zeek-ids .
+# sudo docker build -t shaboti/zeek-ids -f ./Dockerfile.zeek-ids .

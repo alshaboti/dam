@@ -20,7 +20,7 @@ acls:
       dl_type: 2048
       ipv4_dst: 127.0.0.2
       ipv4_src: 8.8.8.8
-      nw_proto: 16
+      nw_proto: 17
       udp_src: 53
   - rule:
       actions:
@@ -30,7 +30,7 @@ acls:
       dl_type: 2048
       ipv4_dst: 8.8.8.8
       ipv4_src: 127.0.0.2
-      nw_proto: 16
+      nw_proto: 17
       udp_dst: 53
   - rule:
       actions:

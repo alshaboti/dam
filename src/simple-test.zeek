@@ -20,6 +20,7 @@ event NetControl::init_done() &priority=-5
   #      NetControl::drop_address(1.1.2.2, 15sec, "Hi there"); # not received in the python
 		#NetControl::redirect_flow([$src_h=c$id$orig_h, $src_m = "FF:FF:FF:BB:BB:AA", $src_p=c$id$orig_p, $dst_h=c$id$resp_h, $dst_m="FF:FF:FF:BB:BB:AA", $dst_p=c$id$resp_p], $out_port=5, $t=30sec);
   	#NetControl::shunt_flow([$src_h=192.168.17.1, $src_p=32/tcp, $dst_h=192.168.17.2, $dst_p=32/tcp], 30sec);
+	NetControl::quarantine_host(127.0.0.2, 8.8.8.8, 127.0.0.3, 15sec);
 
 	}
 
@@ -55,13 +56,6 @@ function allow_connection(c: conn_id, t: interval)
 		print "Error while whitelisting";
 	}	
 
-function redirect_connection(c: conn_id, t: interval)
-	{
-
-#	NetControl::redirect_flow([$src_h=c$orig_h, $src_m = "FF:FF:FF:BB:BB:AA", $src_p=c$orig_p, $dst_h=c$resp_h, $dst_m="FF:FF:FF:BB:BB:AA", $dst_p=c$resp_p], $out_port=3, $t=300sec);
-
-	}	
-
 
 function drop_allow_NetControl(id: conn_id, t: interval, action: string)	
 {
@@ -73,7 +67,7 @@ function drop_allow_NetControl(id: conn_id, t: interval, action: string)
 	# else if(action == "redirect")				
 	# 	NetControl::redirect_flow([$src_h=c$id$orig_h, $src_m = "FF:FF:FF:BB:BB:AA", $src_p=c$id$orig_p, $dst_h=c$id$resp_h, $dst_m="FF:FF:FF:BB:BB:AA", $dst_p=c$id$resp_p], $out_port=5, $t=30sec);
 	# else if(action == "quarantine")				
-	# 	NetControl::quarantine_host($infected=c$id$orig_h, $dns=8.8.8.8, $quarantine=127.0.0.3, $t=15sec);
+	NetControl::quarantine_host(127.0.0.2, 8.8.8.8, 127.0.0.3, 15sec);
 }
 
 # event connection_established(c: connection)

@@ -86,12 +86,12 @@ class faucet_management:
   
       if nc_flow['src_p'] is not None and nc_flow['src_p'][1] == '/udp':
         match['udp_src']= int(nc_flow['src_p'][0]) 
-        match['nw_proto']= 16
+        match['nw_proto']= 17
         nw_proto = 'udp'
         
       if nc_flow['dst_p'] is not None and nc_flow['dst_p'][1] == '/udp':
         match['udp_dst']= int(nc_flow['dst_p'][0])
-        match['nw_proto']= 16
+        match['nw_proto']= 17
         nw_proto = 'udp'
 
       if nc_flow['src_p'] is not None and nc_flow['src_p'][1] == '/tcp':
@@ -123,7 +123,7 @@ class faucet_management:
       if  nc_conn['orig_p'] is not None and nc_conn['orig_p'][1] == '/udp':
         match['udp_dst']= int(nc_conn['resp_p'][0])
         #match['udp_src']= int(nc_conn['orig_p'][0]) 
-        match['nw_proto']= 16
+        match['nw_proto']= 17
         nw_proto = 'udp'
 
       elif nc_conn['orig_p'] is not None and nc_conn['orig_p'][1] == '/tcp':
