@@ -7,39 +7,6 @@ acls:
   - rule:
       actions:
         allow: true
-      dl_type: 2048
-      ipv4_dst: 27.0.0.3
-      ipv4_src: 27.0.0.2
-      nw_proto: 6
-      tcp_dst: 80
-  - rule:
-      actions:
-        output:
-          set_fields:
-          - ipv4_src: 8.8.8.8
-      dl_type: 2048
-      ipv4_dst: 27.0.0.2
-      ipv4_src: 8.8.8.8
-      nw_proto: 16
-      udp_src: 53
-  - rule:
-      actions:
-        output:
-          set_fields:
-          - ipv4_dst: 27.0.0.3
-      dl_type: 2048
-      ipv4_dst: 8.8.8.8
-      ipv4_src: 27.0.0.2
-      nw_proto: 16
-      udp_dst: 53
-  - rule:
-      actions:
-        allow: false
-      dl_type: 2048
-      ipv4_src: 27.0.0.2
-  - rule:
-      actions:
-        allow: true
   mirror_acl:
   - rule:
       actions:
