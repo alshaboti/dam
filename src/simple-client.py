@@ -237,19 +237,20 @@ while 1==1:
 
     response = ep.getNextCommand()
     print("### Response.type is : ",response.type)
-    pp.pprint(response.rule)
     if not (response.type == netcontrol.ResponseType.AddRule or \
        response.type == netcontrol.ResponseType.RemoveRule) :        
        # ConnectionEstablished = 1, Error = 2, AddRule = 3, RemoveRule = 4, SelfEvent = 5
        # response.type >>  https://github.com/zeek/zeek-netcontrol/blob/master/netcontrol/api.py#L91
         continue
+    pp.pprint(response.rule)
+
     if response.rule['target'] == 'FORWARD' and \
       response.rule['ty'] in ['WHITELIST','REDIRECT','DROP','MODIFY']:
       
       new_rule  = faucet_mng.create_rule(response.rule)
       if new_rule is not None:
         pp.pprint(new_rule)
-        faucet_mng.add_rule(new_rule)
+        #faucet_mng.add_rule(new_rule)
         ep.sendRuleAdded(response, "OK")
     #SHUNT
     elif response.rule['target'] == 'MONITOR' and \
@@ -257,7 +258,7 @@ while 1==1:
       new_rule  = faucet_mng.create_rule(response.rule)
       if new_rule is not None:
         pp.pprint(new_rule)
-        faucet_mng.add_rule(new_rule)
+        #faucet_mng.add_rule(new_rule)
         ep.sendRuleAdded(response, "OK")
 
 

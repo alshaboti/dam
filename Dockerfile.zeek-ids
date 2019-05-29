@@ -1,18 +1,20 @@
-FROM ubuntu:16.04 
-RUN apt update
+FROM ubuntu:18.04 
+RUN apt-get update
 
-RUN apt install cmake make gcc g++ flex bison libpcap-dev libssl-dev python-dev swig zlib1g-dev -y
-RUN apt install git python-pip -y && pip install pyyaml
-RUN git clone --recursive https://github.com/zeek/zeek && cd zeek && ./configure && make && make install
-RUN pip install paramiko scp # without it I get error when run python broker script
+RUN apt-get install cmake make gcc g++ flex bison libpcap-dev libssl-dev python-dev swig zlib1g-dev -y
+RUN apt-get install curl git python-pip -y && pip install pyyaml
+
+RUN git clone --recursive https://github.com/zeek/zeek 
+RUN cd zeek && ./configure && make install
+RUN cd zeek && make clean
+RUN pip install paramiko scp # without it I get no module IPaddress error when run python broker script
+
 # install zeek-netcontrol
-RUN git clone https://github.com/zeek/zeek-netcontrol.git \
-    && sed -i "s/broker.bro/broker.zeek/g" /zeek-netcontrol/netcontrol/api.py
+RUN git clone https://github.com/zeek/zeek-netcontrol.git
 ENV PATH=/usr/local/bro/bin:$PATH
 ENV PYTHONPATH=$PYTHONPATH:/usr/local/bro/lib/broctl:/zeek-netcontrol
  
 #install gNMI client
-RUN apt install curl -y
 RUN curl -O https://dl.google.com/go/go1.12.5.linux-amd64.tar.gz
 RUN mkdir /root/go
 RUN tar -C /root/go -xzf go1.12.5.linux-amd64.tar.gz
@@ -40,3 +42,4 @@ ENV AUTH="-ca /pegler/tls_cert_key/client/ca.crt -cert /pegler/tls_cert_key/clie
 # use gnmi_get_scr.sh and gnmi_set_scr.sh scripts
 
 # sudo docker build -t mohmd/zeek-ids -f ./Dockerfile.zeek-ids .
+

@@ -85,13 +85,13 @@ function cr_all_conts_with_xterms(){
                    docker run \
                    --rm  --name host \
                    -it \
-                   python bash &
+                   python bash -c "echo 'RUN: wget http://192.168.0.1:8000' && bash" &
 
 	xterm -bg NavyBlue -T server -e \
                    docker run \
                    --rm --name server \
                    -it \
-                   python bash &
+                   python bash -c "echo 'RUN: python -m http.server 8000' && bash" &
 
 	xterm -bg Maroon -T zeek -e \
                    docker run \
@@ -101,7 +101,7 @@ function cr_all_conts_with_xterms(){
 				   -v $PWD/etc/faucet/faucet.zeek.yaml:/pegler/etc/faucet/faucet.zeek.yaml \
 		           -v $PWD/tls_cert_key/:/pegler/tls_cert_key/ \
                    -w /pegler/src \
-         	   mohmd/zeek-ids /bin/bash &
+         	   mohmd/zeek bash  &
 }
 
 
@@ -149,8 +149,8 @@ function get_X-bash-xterm(){
 # function get_x-bash(){
 # 	docker exec -it $1 /bin/bash 
 # }
-echo "get_faucet-agent-xterm"
-function get_faucet-agent-xterm(){
+echo "get_faucet-gNMI-agent-xterm"
+function get_faucet-gNMI-agent-xterm(){
 	xterm -T faucetXterm -e docker exec faucet ./faucetagent/faucetagent.py --cert /pegler/tls_cert_key/server/server.crt  --key /pegler/tls_cert_key/server/server.key --configfile /etc/faucet/faucet.yaml &
 }
 

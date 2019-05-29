@@ -61,6 +61,7 @@ source setup.sh
 The `setup.sh` bash file contains scripts to: 
 - `generate_gNMI_certs`: create fake certificates and keys for gNMI client and agent between zeek/bro and faucet. 
 -`cr_all_conts_with_xterms`: create faucet, bro, server, client docker containers. 
+- `get_faucet-gNMI-agent-xterm`: Run faucet gNMI agent on Facuet container.
 - `get_X-bash-xterm`: Get another xterm for X container. 
 - `create_zeek_net`: Create OVS and connect docker containers.   
 - `check_zeek_net`: Check the network setup. 
@@ -86,7 +87,7 @@ create_ovs_net
 Then follow the follwoing steps:  
 1- Start by running faucet gNMI agent
 ```
-get_faucet-agent-xterm
+get_faucet-gNMI-agent-xterm
 ```
 2- Run python broker. 
 It receives zeek events through NetControl framework, and uses `gNMI` to get/set  `faucet.yaml` file from `faucet` container.  
@@ -210,8 +211,9 @@ image that is based on `Alpine linux`.
 
 ### Zeek
 - Zeek/bro doesn't sniff files unless python server is running on port 8000?  
-- deprecated bro.event usage error in `netcontrol/api.py`. Replace all `broker.bro` by `broker.zeek` in `api.py` file.
-### faucetagent 
+- deprecated bro.event usage error in `netcontrol/api.py`. Replace all `broker.bro` by `broker.zeek` in `api.py` file (SOLVED).
+### faucetagent
+ Reported and solved 
 ```
 # $(<faucet.yaml) not working , need to be "$(<faucet.yaml)"
 root@8c57dfa15a14:/pegler/etc/faucet# gnmi_set $AUTH -replace=/:$(<faucet.yaml)
