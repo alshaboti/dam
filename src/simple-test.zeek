@@ -61,7 +61,6 @@ event connection_established(c: connection)
      {	
  		print "Connection established";
      }
-=======
 
 
 event icmp_echo_request (c: connection, icmp: icmp_conn, id: count, seq: count, payload: string)
