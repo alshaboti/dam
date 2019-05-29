@@ -43,7 +43,7 @@ echo "############## First: Create and attach to each container ################
 #                   -v /var/log/faucet/:/var/log/faucet/ \
 #                   -v $PWD/etc/faucet/:/etc/faucet/ \
 #                   -p 6653:6653 -p 9302:9302 \
-#		   mohmd/faucet-ssh
+#		   shaboti/faucet-ssh
 #}
 
 #echo "cr_server-cont"
@@ -64,7 +64,7 @@ echo "############## First: Create and attach to each container ################
 #	docker run \
 #                   --rm -it --name zeek \
 #                   -v $PWD:/pegler \
-#                   -v /etc/faucet/:/etc/faucet/ mohmd/zeek-ids /bin/bash
+#                   -v /etc/faucet/:/etc/faucet/ shaboti/zeek-ids /bin/bash
 #}
 
 #echo "2- OR create and attach to all container at once using xterm"
@@ -77,7 +77,7 @@ function cr_all_conts_with_xterms(){
 				   -v $PWD/etc/faucet/faucet.yaml:/etc/faucet/faucet.yaml \
 		           -v $PWD/tls_cert_key/:/pegler/tls_cert_key/ \
                    -p 6653:6653 -p 9302:9302 \
-                    mohmd/faucet-agent  	&
+                    shaboti/faucet-agent  	&
 		  
 
 
@@ -101,7 +101,7 @@ function cr_all_conts_with_xterms(){
 				   -v $PWD/etc/faucet/faucet.zeek.yaml:/pegler/etc/faucet/faucet.zeek.yaml \
 		           -v $PWD/tls_cert_key/:/pegler/tls_cert_key/ \
                    -w /pegler/src \
-         	   mohmd/zeek bash  &
+         	   shaboti/zeek-ids /bin/bash &
 }
 
 

@@ -7,7 +7,7 @@ acls:
   - rule:
       actions:
         allow: true
-  mirror_acl:
+ mirror_acl:
   - rule:
       actions:
         allow: true

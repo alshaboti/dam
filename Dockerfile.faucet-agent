@@ -25,4 +25,4 @@ CMD faucet #/etc/init.d/ssh start && faucet
 
 # You need to run gnmi agent using 
 # sudo docker exec faucet ./faucetagent/faucetagent.py --cert /pegler/tls_cert_key/server/server.crt  --key /pegler/tls_cert_key/server/server.key --configfile /etc/faucet/faucet.yaml 
-# sudo docker build -t mohmd/faucet-agent -f Dockerfile.faucet-agent .
+# sudo docker build -t shaboti/faucet-agent -f Dockerfile.faucet-agent .
