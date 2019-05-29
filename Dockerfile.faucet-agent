@@ -1,4 +1,4 @@
-FROM ubuntu:16.04
+FROM ubuntu:18.04
 
 RUN apt-get update
 
@@ -16,12 +16,9 @@ RUN git clone https://github.com/faucetsdn/faucetagent.git \
     && cd /faucetagent && sed -i "s/sudo//g" dependencies.sh && ./dependencies.sh
 RUN  cd /faucetagent && make
 
-# faucetagent uses fuser utility for reloading faucet.yaml file
-RUN apt install psmisc 
-
 ExPOSE 6653
 
-CMD faucet #/etc/init.d/ssh start && faucet 
+CMD faucet 
 
 # You need to run gnmi agent using 
 # sudo docker exec faucet ./faucetagent/faucetagent.py --cert /pegler/tls_cert_key/server/server.crt  --key /pegler/tls_cert_key/server/server.key --configfile /etc/faucet/faucet.yaml 
