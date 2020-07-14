@@ -1,5 +1,5 @@
 # dam
-An attempt to connect Faucet SDN controller with BRO IDS using NetControl framework. Such that when BRO detects malicious connections it sends events to backend python script which then update faucet.yaml configuration file with the action required.
+An attempt to connect Faucet SDN controller with Zeek/BRO IDS using NetControl framework. Such that when Zeek/BRO detects malicious connections it sends events to backend python script which then update faucet.yaml configuration file with the action required.
 
 ### Network setup
 We utalized docker containers with OVS and docker-ovs.  
@@ -69,7 +69,7 @@ The `setup.sh` bash file contains scripts to:
 - `faucet_relaod_config` Reload faucet configuration file.  
 
 ## Run the test
-In this test, Bro sends block rules to python script to block a connection that carry the `bash` file (when client request `/bin/bash` file from the webserver). 
+In this test, Zeek/Bro sends block rules to python script to block a connection that carry the `bash` file (when client request `/bin/bash` file from the webserver). 
 ```
 # log in as root or in docker group
 su - 
@@ -96,7 +96,7 @@ On the xterm window of Zeek run
 python simple-client.py
 ```
 3- Run Zeek.  
-open new Zeek xterm bro window. 
+open new Zeek xterm Zeek/bro window. 
 ```
 get_X-bash-xterm zeek
 zeek -C -i eth2 simple-test.bro
@@ -111,8 +111,8 @@ python -m http.server 8000
 # send http request to the server
 wget http://192.168.0.1:8000/bin/bash
 ```
-This connection should be mirrored by Faucet to Bro. 
-Bro can send drop or allow rules to `simple-client.py` script by sending the 4tuples of the connection `c$id` to drop the connection.   
+This connection should be mirrored by Faucet to Zeek/Bro. 
+Zeek/Bro can send drop or allow rules to `simple-client.py` script by sending the 4tuples of the connection `c$id` to drop the connection.   
 Python script `simple-client.py` will update the `faucet.yaml` file locally then use `gNMI` to replace `faucet.yaml` file in `faucet` container by the updated one.
 
 This results in blocking the connection between client and server containers on port 8000. 
