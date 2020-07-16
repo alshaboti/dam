@@ -157,7 +157,7 @@ Python script `Simple-client.py` will install faucet rules to block the connecti
 clear_ovs_net_all
 ```
 
-More abotu netControl is in here https://docs.zeek.org/en/stable/frameworks/netcontrol.html
+More about netControl is in here https://docs.zeek.org/en/stable/frameworks/netcontrol.html
 Tested with OVS, test script modified from https://github.com/bro/bro-netcontrol/tree/master/test
 
 ## Done
