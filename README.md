@@ -1,4 +1,4 @@
-# dam
+# Dam
 An attempt to connect Faucet SDN controller with Zeek/BRO IDS using NetControl framework. Such that when Zeek/BRO detects malicious connections it sends events to backend python script which then update faucet.yaml configuration file with the action required.
 
 ### Network setup
